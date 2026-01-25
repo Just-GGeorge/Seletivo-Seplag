@@ -3,6 +3,9 @@ package br.com.seplag.sistema.erp.model;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+
+@Entity
+@Table(name = "imagens_albuns")
 public class ImagemAlbum {
 
 	@Id
