@@ -1,5 +1,6 @@
 package br.com.seplag.sistema.exception;
 
+import br.com.seplag.sistema.storage.ArquivoInvalidoException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
@@ -71,5 +72,17 @@ public class GlobalExceptionHandler {
                 null
         );
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(body);
+    }
+    @ExceptionHandler(ArquivoInvalidoException.class)
+    public ResponseEntity<ApiError> handleArquivoInvalido(ArquivoInvalidoException ex, HttpServletRequest req) {
+        var body = new ApiError(
+                Instant.now(),
+                HttpStatus.BAD_REQUEST.value(),
+                "Arquivo inválido",
+                ex.getMessage(),
+                req.getRequestURI(),
+                null
+        );
+        return ResponseEntity.badRequest().body(body);
     }
 }

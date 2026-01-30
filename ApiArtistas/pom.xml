@@ -45,6 +45,12 @@
 			<scope>runtime</scope>
 		</dependency>
 
+        <dependency>
+            <groupId>io.minio</groupId>
+            <artifactId>minio</artifactId>
+            <version>8.4.4</version>
+        </dependency>
+
 		<!-- Dependências de Teste Corrigidas -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>

@@ -7,7 +7,7 @@ services:
     environment:
       POSTGRES_DB: meu_banco
       POSTGRES_USER: Guilherme
-      POSTGRES_PASSWORD: "SENHA#2026"
+      POSTGRES_PASSWORD: "SENHA2026"
     ports:
       - "5432:5432"
     volumes:
