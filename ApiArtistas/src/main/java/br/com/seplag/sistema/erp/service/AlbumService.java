@@ -13,7 +13,6 @@ import br.com.seplag.sistema.erp.repository.AlbumRepository;
 import br.com.seplag.sistema.erp.repository.ArtistaRepository;
 import br.com.seplag.sistema.exception.RecursoNaoEncontradoException;
 
-import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -29,47 +28,43 @@ public class AlbumService {
 
     @Transactional
     public AlbumDto criar(AlbumDto dto) {
-        Artista artista = artistaRepository.findById(dto.artistaId())
-                .orElseThrow(() -> new RecursoNaoEncontradoException("Artista não encontrado: " + dto.artistaId()));
+        Album album = new Album();
+        album.setTitulo(dto.titulo());
+        album.setDataLancamento(dto.dataLancamento());
 
-        Album a = new Album();
-        a.setArtista(artista);
-        a.setTitulo(dto.titulo());
-        a.setDataLancamento(dto.dataLancamento());
+        List<Artista> artistas = carregarArtistasObrigatorio(dto.artistasIds());
+        album.setArtistas(artistas);
 
-        Album salvo = albumRepository.save(a);
-        return new AlbumDto(salvo.getId(), salvo.getArtista().getId(), salvo.getTitulo(), salvo.getDataLancamento());
+        Album salvo = albumRepository.save(album);
+        return toDto(salvo);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<AlbumDto> listar(Long artistaId, String titulo, Pageable pageable) {
+        return albumRepository.buscarComFiltro(artistaId, titulo, pageable)
+                .map(this::toDto);
     }
 
     @Transactional(readOnly = true)
     public AlbumDto buscarPorId(Long id) {
-        Album a = albumRepository.findById(id)
+        Album album = albumRepository.findById(id)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Álbum não encontrado: " + id));
-        return new AlbumDto(a.getId(), a.getArtista().getId(), a.getTitulo(), a.getDataLancamento());
-    }
-
-    @Transactional(readOnly = true)
-    public Page<AlbumDto> listarPorArtista(Long artistaId, String titulo, Pageable pageable) {
-        return albumRepository.buscarComFiltro(artistaId, titulo, pageable)
-                .map(a -> new AlbumDto(a.getId(), a.getArtista().getId(), a.getTitulo(), a.getDataLancamento()));
+        return toDto(album);
     }
 
     @Transactional
     public AlbumDto atualizar(Long id, AlbumDto dto) {
-        Album a = albumRepository.findById(id)
+        Album album = albumRepository.findById(id)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Álbum não encontrado: " + id));
 
-        if (!a.getArtista().getId().equals(dto.artistaId())) {
-            Artista novoArtista = artistaRepository.findById(dto.artistaId())
-                    .orElseThrow(() -> new RecursoNaoEncontradoException("Artista não encontrado: " + dto.artistaId()));
-            a.setArtista(novoArtista);
-        }
+        album.setTitulo(dto.titulo());
+        album.setDataLancamento(dto.dataLancamento());
 
-        a.setTitulo(dto.titulo());
-        a.setDataLancamento(dto.dataLancamento());
+        List<Artista> artistas = carregarArtistasObrigatorio(dto.artistasIds());
+        album.setArtistas(artistas);
 
-        Album salvo = albumRepository.save(a);
-        return new AlbumDto(salvo.getId(), salvo.getArtista().getId(), salvo.getTitulo(), salvo.getDataLancamento());
+        Album salvo = albumRepository.save(album);
+        return toDto(salvo);
     }
 
     @Transactional
@@ -78,5 +73,32 @@ public class AlbumService {
             throw new RecursoNaoEncontradoException("Álbum não encontrado: " + id);
         }
         albumRepository.deleteById(id);
+    }
+
+    private AlbumDto toDto(Album album) {
+        List<Long> artistasIds = (album.getArtistas() == null)
+                ? List.of()
+                : album.getArtistas().stream().map(Artista::getId).toList();
+
+        return new AlbumDto(
+                album.getId(),
+                album.getTitulo(),
+                album.getDataLancamento(),
+                artistasIds
+        );
+    }
+
+    private List<Artista> carregarArtistasObrigatorio(List<Long> artistasIds) {
+        if (artistasIds == null || artistasIds.isEmpty()) {
+            throw new IllegalArgumentException("artistasIds é obrigatório e não pode ser vazio");
+        }
+
+        List<Artista> artistas = artistaRepository.findAllById(artistasIds);
+
+        if (artistas.size() != artistasIds.size()) {
+            throw new RecursoNaoEncontradoException("Um ou mais artistas informados não existem");
+        }
+
+        return artistas;
     }
 }
