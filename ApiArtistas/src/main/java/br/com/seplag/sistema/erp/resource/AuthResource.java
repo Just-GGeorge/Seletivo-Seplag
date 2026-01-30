@@ -17,7 +17,7 @@ import br.com.seplag.sistema.security.JwtService;
 import br.com.seplag.sistema.security.RefreshTokenService;
 
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/api/v1/auth")
 public class AuthResource {
 
     private final AuthenticationManager authManager;

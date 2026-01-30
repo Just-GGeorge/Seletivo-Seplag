@@ -15,7 +15,7 @@ import java.net.URI;
 
 
 @RestController
-@RequestMapping("/albuns")
+@RequestMapping("/api/v1/albuns")
 public class AlbumResource {
 
 	private final AlbumService albumService;

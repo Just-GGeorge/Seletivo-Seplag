@@ -16,7 +16,7 @@ import java.net.URI;
 import java.util.List;
 
 @RestController
-@RequestMapping("/artistas")
+@RequestMapping("/api/v1/artistas")
 public class ArtistaResource {
 
 	private final ArtistaService artistaService;
