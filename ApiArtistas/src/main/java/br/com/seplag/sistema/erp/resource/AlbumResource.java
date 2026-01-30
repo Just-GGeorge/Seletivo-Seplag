@@ -7,13 +7,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.data.domain.Sort;
-import org.springframework.format.annotation.DateTimeFormat;
 
 import br.com.seplag.sistema.erp.model.dto.AlbumDto;
 import br.com.seplag.sistema.erp.service.AlbumService;
 
 import java.net.URI;
-import java.time.LocalDate;
 
 
 @RestController
@@ -32,19 +30,18 @@ public class AlbumResource {
         return ResponseEntity.created(URI.create("/albuns/" + criado.id())).body(criado);
     }
 
+    @GetMapping
+    public ResponseEntity<Page<AlbumDto>> listar(
+            @RequestParam(required = false) Long artistaId,
+            @RequestParam(defaultValue = "") String titulo,
+            @PageableDefault(size = 10, sort = "id", direction = Sort.Direction.ASC) Pageable pageable
+    ) {
+        return ResponseEntity.ok(albumService.listar(artistaId, titulo, pageable));
+    }
 
     @GetMapping("/{id}")
     public ResponseEntity<AlbumDto> buscarPorId(@PathVariable Long id) {
         return ResponseEntity.ok(albumService.buscarPorId(id));
-    }
-
-    @GetMapping("/por-artista/{artistaId}")
-    public ResponseEntity<Page<AlbumDto>> listarPorArtista(
-            @PathVariable Long artistaId,
-            @RequestParam(defaultValue = "") String titulo,
-            @PageableDefault(size = 10, sort = "id", direction = Sort.Direction.ASC) Pageable pageable
-    ) {
-        return ResponseEntity.ok(albumService.listarPorArtista(artistaId, titulo, pageable));
     }
 
     @PutMapping("/{id}")

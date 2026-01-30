@@ -5,16 +5,11 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 import java.time.LocalDate;
+import java.util.List;
 
 public record AlbumDto(
         Long id,
-
-        @NotNull(message = "artistaId é obrigatório")
-        Long artistaId,
-
-        @NotBlank(message = "titulo é obrigatório")
-        @Size(max = 255, message = "titulo deve ter no máximo 255 caracteres")
-        String titulo,
-
-        LocalDate dataLancamento
+        @NotBlank String titulo,
+        LocalDate dataLancamento,
+        @NotNull List<Long> artistasIds
 ) {}

@@ -26,7 +26,7 @@ public class Artista {
     @Column(name = "atualizado_em")
     private LocalDateTime atualizadoEm;
 
-    @OneToMany(mappedBy = "artista", cascade = CascadeType.ALL, orphanRemoval = true)
+    @ManyToMany(mappedBy = "artistas")
     private List<Album> albuns = new ArrayList<>();
 
     @PrePersist

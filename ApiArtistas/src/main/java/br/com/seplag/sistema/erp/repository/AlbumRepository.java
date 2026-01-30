@@ -12,14 +12,18 @@ import org.springframework.data.repository.query.Param;
 import java.time.LocalDate;
 
 public interface AlbumRepository extends JpaRepository<Album, Long> {
-    
-	@Query("""
-		    SELECT al
-		    FROM Album al
-		    WHERE (:artistaId IS NULL OR al.artista.id = :artistaId)
-		      AND (:titulo = '' OR LOWER(al.titulo) LIKE LOWER(CONCAT('%', :titulo, '%')))
-		""")
-        Page<Album> buscarComFiltro(@Param("artistaId") Long artistaId,@Param("titulo") String titulo,Pageable pageable);
 
-        Page<Album> findByArtistaId(Long artistaId, Pageable pageable);
+    @Query("""
+        SELECT DISTINCT al
+        FROM Album al
+        LEFT JOIN al.artistas ar
+        WHERE (:artistaId IS NULL OR ar.id = :artistaId)
+          AND (:titulo = '' OR LOWER(al.titulo) LIKE LOWER(CONCAT('%', :titulo, '%')))
+    """)
+    Page<Album> buscarComFiltro(
+            @Param("artistaId") Long artistaId,
+            @Param("titulo") String titulo,
+            Pageable pageable
+    );
+
 }

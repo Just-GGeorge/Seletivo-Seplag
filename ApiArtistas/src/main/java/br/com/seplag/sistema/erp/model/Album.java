@@ -14,9 +14,12 @@ public class Album {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "artista_id", nullable = false)
-    private Artista artista;
+    @ManyToMany
+    @JoinTable(name = "artistas_albuns",
+            joinColumns = @JoinColumn(name = "album_id"),
+            inverseJoinColumns = @JoinColumn(name = "artista_id")
+    )
+    private List<Artista> artistas = new ArrayList<>();
 
     @Column(name = "titulo", nullable = false, length = 255)
     private String titulo;
@@ -48,8 +51,8 @@ public class Album {
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
-    public Artista getArtista() { return artista; }
-    public void setArtista(Artista artista) { this.artista = artista; }
+    public List<Artista> getArtistas() { return artistas; }
+    public void setArtistas(List<Artista> artista) { this.artistas = artista; }
 
     public String getTitulo() { return titulo; }
     public void setTitulo(String titulo) { this.titulo = titulo; }
