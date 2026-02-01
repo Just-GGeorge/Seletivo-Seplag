@@ -3,7 +3,6 @@ FROM eclipse-temurin:17-jdk AS build
 
 WORKDIR /app
 
-# Copia arquivos necessários para cache do Maven
 COPY mvnw .
 COPY .mvn .mvn
 COPY pom.xml .
@@ -11,10 +10,7 @@ COPY pom.xml .
 RUN chmod +x mvnw
 RUN ./mvnw dependency:go-offline
 
-# Copia o código fonte
 COPY src src
-
-# Build do JAR
 RUN ./mvnw clean package -DskipTests
 
 
@@ -22,6 +18,11 @@ RUN ./mvnw clean package -DskipTests
 FROM eclipse-temurin:17-jre
 
 WORKDIR /app
+
+# instala curl para healthcheck do docker-compose
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends curl \
+  && rm -rf /var/lib/apt/lists/*
 
 COPY --from=build /app/target/*.jar app.jar
 
