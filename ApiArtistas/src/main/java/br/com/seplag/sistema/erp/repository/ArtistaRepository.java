@@ -10,16 +10,17 @@ import org.springframework.data.repository.query.Param;
 
 
 public interface ArtistaRepository extends JpaRepository<Artista, Long> {
-	
-	@Query("""
-		    SELECT a
-		    FROM Artista a
-		    WHERE (:nome IS NULL OR LOWER(a.nome) LIKE CONCAT('%', :nome, '%'))
-		      AND (:genero IS NULL OR LOWER(a.genero) = :genero)
-		""")
-	    Page<Artista> buscarComFiltro(
-	            @Param("nome") String nome,
-	            @Param("genero") String genero,
-	            Pageable pageable
-	    );
+
+    @Query("""
+        SELECT a
+        FROM Artista a
+        WHERE (:pesquisa IS NULL OR :pesquisa = ''
+            OR LOWER(a.nome) LIKE CONCAT('%', LOWER(:pesquisa), '%')
+            OR LOWER(a.genero) = LOWER(:pesquisa)
+        )
+    """)
+    Page<Artista> buscarComFiltro(
+            @Param("pesquisa") String pesquisa,
+            Pageable pageable
+    );
 }

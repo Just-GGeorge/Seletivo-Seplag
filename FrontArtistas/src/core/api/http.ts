@@ -58,7 +58,7 @@ http.interceptors.response.use(
     if (!original) return Promise.reject(error);
 
     // Se já tentou, não fica em loop
-    if (status === 401 && !original._retry) {
+    if ((status === 401 || status === 403) && !original._retry) {
       original._retry = true;
 
       try {

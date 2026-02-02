@@ -33,11 +33,10 @@ public class ArtistaResource {
 
     @GetMapping
     public ResponseEntity<Page<ArtistaDto>> listar(
-    		@RequestParam(defaultValue = "") String nome,
-            @RequestParam(defaultValue = "") String genero,
+    		@RequestParam(defaultValue = "") String pesquisa,
             @PageableDefault(size = 10, sort = "id", direction = Sort.Direction.ASC) Pageable pageable
     ) {
-        return ResponseEntity.ok(artistaService.listar(nome, genero, pageable));
+        return ResponseEntity.ok(artistaService.listar(pesquisa, pageable));
     }
 
     @GetMapping("/{id}")

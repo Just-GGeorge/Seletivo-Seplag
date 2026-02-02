@@ -78,49 +78,6 @@ public class ImagemAlbumService {
     }
 
     @Transactional
-    public ImagemAlbumDto uploadParaAlbum(Long albumId, MultipartFile arquivo, boolean ehCapa) {
-        Album album = albumRepository.findById(albumId)
-                .orElseThrow(() -> new RecursoNaoEncontradoException("Álbum não encontrado: " + albumId));
-
-        validarArquivo(arquivo);
-
-        String contentType = arquivo.getContentType();
-        String objectKey = storage.gerarObjectKeyAlbum(albumId, contentType);
-
-        try {
-            // 1) upload no MinIO
-            storage.upload(objectKey, arquivo.getInputStream(), arquivo.getSize(), contentType);
-
-            // 2) se for capa, desmarcar qualquer capa existente antes de salvar (evita violar o unique index)
-            if (ehCapa) {
-                imagemAlbumRepository.desmarcarCapasDoAlbum(albumId);
-            }
-
-            // 3) salvar no banco
-            ImagemAlbum img = new ImagemAlbum();
-            img.setAlbum(album);
-            img.setChaveObjeto(objectKey);
-            img.setTipoConteudo(contentType);
-            img.setTamanhoBytes(arquivo.getSize());
-            img.setEhCapa(ehCapa);
-
-            ImagemAlbum salvo = imagemAlbumRepository.save(img);
-
-            return new ImagemAlbumDto(
-                    salvo.getId(),
-                    salvo.getChaveObjeto(),
-                    salvo.getTipoConteudo(),
-                    salvo.getTamanhoBytes(),
-                    salvo.isEhCapa()
-            );
-        } catch (Exception e) {
-            // compensação: se falhar após upload, tentar apagar o objeto
-            try { storage.delete(objectKey); } catch (Exception ignored) {}
-            throw new RuntimeException("Falha ao enviar imagem para o MinIO", e);
-        }
-    }
-
-    @Transactional
     public List<ImagemAlbumDto> uploadMultiplasParaAlbum(Long albumId, List<MultipartFile> arquivos, Integer indiceCapa) {
         Album album = albumRepository.findById(albumId)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Álbum não encontrado: " + albumId));
@@ -149,11 +106,10 @@ public class ImagemAlbumService {
                 String contentType = arquivo.getContentType();
                 String objectKey = storage.gerarObjectKeyAlbum(albumId, contentType);
 
-                // 1) upload no MinIO
+                // 1) MinIO
                 storage.upload(objectKey, arquivo.getInputStream(), arquivo.getSize(), contentType);
                 objectKeysEnviados.add(objectKey);
 
-                // 2) salvar no banco
                 ImagemAlbum img = new ImagemAlbum();
                 img.setAlbum(album);
                 img.setChaveObjeto(objectKey);
@@ -176,7 +132,6 @@ public class ImagemAlbumService {
 
             return result;
         } catch (Exception e) {
-            // compensação: apaga tudo que subiu
             for (String key : objectKeysEnviados) {
                 try { storage.delete(key); } catch (Exception ignored) {}
             }
@@ -189,7 +144,6 @@ public class ImagemAlbumService {
         ImagemAlbum img = imagemAlbumRepository.findByIdAndAlbumId(imagemId, albumId)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Imagem não encontrada: " + imagemId));
 
-        // desmarca outras capas (garante no máximo 1)
         imagemAlbumRepository.desmarcarCapasDoAlbum(albumId);
 
         img.setEhCapa(true);

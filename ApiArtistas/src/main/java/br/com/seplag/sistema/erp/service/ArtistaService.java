@@ -32,8 +32,8 @@ public class ArtistaService {
     }
 
     @Transactional(readOnly = true)
-    public Page<ArtistaDto> listar(String nome, String genero, Pageable pageable) {
-        return artistaRepository.buscarComFiltro(nome, genero, pageable)
+    public Page<ArtistaDto> listar(String pesquisa, Pageable pageable) {
+        return artistaRepository.buscarComFiltro(pesquisa, pageable)
                 .map(a -> new ArtistaDto(a.getId(), a.getNome(), a.getGenero()));
     }
 

@@ -2,9 +2,9 @@ import { useMemo, useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { Box, Container, Typography } from "@mui/material";
 
-import { authFacade } from "../../../core/auth/AuthFacade";
-import { useObservableState } from "../../../core/hooks/useObservableState";
-import LoginForm from "../components/LoginForm";
+import { authFacade } from "../../core/auth/AuthFacade";
+import { useObservableState } from "../../core/hooks/useObservableState";
+import LoginForm from "./components/LoginForm";
 
 export default function LoginPage() {
   const navigate = useNavigate();
