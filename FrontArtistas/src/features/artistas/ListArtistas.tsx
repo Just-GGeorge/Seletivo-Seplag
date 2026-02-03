@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Box, Button, Paper, Stack, Typography, Alert } from "@mui/material";
+import { Box, Button, Stack, Typography, Alert, Paper } from "@mui/material";
 import {
   Dialog,
   DialogActions,
@@ -7,6 +7,7 @@ import {
   DialogContentText,
   DialogTitle,
 } from "@mui/material";
+import PersonAddOutlinedIcon from '@mui/icons-material/PersonAddOutlined';
 import { useNavigate } from "react-router-dom";
 import { ArtistasFilter } from "./components/ArtistasFilter";
 import { ArtistasTable } from "./components/ArtistasTable";
@@ -133,14 +134,22 @@ export default function ListArtistas() {
 
   return (
     <Box>
-      <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
-        <Typography variant="h5">Artistas</Typography>
-        <Button variant="contained" onClick={() => navigate("/artists/new")}>
-          Novo artista
-        </Button>
-      </Stack>
-
       <Paper sx={{ p: 2 }}>
+
+        <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
+          <Typography variant="h5">Artistas</Typography>
+          <Button
+            variant="contained"
+            onClick={() => navigate("/artists/new")}
+            startIcon={<PersonAddOutlinedIcon />}
+            sx={{
+              borderRadius: '50px'
+            }}
+          >
+            Novo Artista
+          </Button>
+        </Stack>
+
         <ArtistasFilter
           pesquisa={draft.pesquisa}
           loading={loading}

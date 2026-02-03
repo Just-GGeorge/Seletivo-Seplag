@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Alert, Box, Paper, Typography } from "@mui/material";
+import { Alert, Box, Button, Divider, Paper, Typography } from "@mui/material";
 import { useForm } from "react-hook-form";
 import { useNavigate, useParams } from "react-router-dom";
 
@@ -7,6 +7,8 @@ import type { ArtistaDto } from "./artistasTypes";
 import { buscarArtistaPorId } from "./artistasSlice";
 import { ArtistaForm } from "./components/ArtistaForm";
 import ArtistAlbums from "../albums/ArtistAlbums";
+import ArrowBackIosNewOutlined from "@mui/icons-material/ArrowBackIosNewOutlined";
+
 
 
 export default function ViewArtista() {
@@ -48,14 +50,30 @@ export default function ViewArtista() {
 
         <ArtistaForm
           control={control}
-          onSubmit={handleSubmit(() => {})}
+          onSubmit={handleSubmit(() => { })}
           isLoading={loading}
           isView
           onGoBack={() => navigate("/artists")}
         />
+
+        <Divider sx={{ my: 3 }} />
+
+        <ArtistAlbums artistId={artistaId} />
+
+
+        <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
+          <Button
+            variant="outlined"
+            startIcon={<ArrowBackIosNewOutlined />}
+            onClick={() => navigate("/artists")}
+          >
+            Voltar
+          </Button>
+        </Box>
       </Paper>
 
-      <ArtistAlbums artistId={artistaId} />
+
+
     </Box>
   );
 }

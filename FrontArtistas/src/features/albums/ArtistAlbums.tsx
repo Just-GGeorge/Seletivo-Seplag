@@ -1,10 +1,9 @@
-import  { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Alert,
   Box,
   Button,
   Divider,
-  Paper,
   Stack,
   Typography,
   Dialog,
@@ -13,12 +12,16 @@ import {
   DialogContentText,
   DialogTitle,
   TextField,
+  TablePagination,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
+import AlbumIcon from '@mui/icons-material/Album';
+import SearchIcon from '@mui/icons-material/Search';
 
-import type { AlbumDto } from "./albumsTypes";
+
+import type { AlbumDto, ImagemAlbumComUrlDto } from "./albumsTypes";
 import { deletarAlbum, listarAlbuns, listarImagensComUrls } from "./albumsSlice";
-import { AlbumsTable } from "./components/AlbumsTable";
+import { AlbumsCards } from "./components/AlbumsCards";
 
 type Order = "asc" | "desc";
 
@@ -46,7 +49,9 @@ export default function ArtistAlbums({ artistId }: Props) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | undefined>(undefined);
 
-  const [coversByAlbumId, setCoversByAlbumId] = useState<Record<number, string>>({});
+  const [imagesByAlbumId, setImagesByAlbumId] = useState<Record<number, ImagemAlbumComUrlDto[]>>(
+    {}
+  );
 
   const [query, setQuery] = useState<QueryState>({
     titulo: "",
@@ -58,7 +63,10 @@ export default function ArtistAlbums({ artistId }: Props) {
 
   const [draft, setDraft] = useState<DraftState>({ titulo: "" });
 
-  const sortParam = useMemo(() => `${query.sortField},${query.sortOrder}`, [query.sortField, query.sortOrder]);
+  const sortParam = useMemo(
+    () => `${query.sortField},${query.sortOrder}`,
+    [query.sortField, query.sortOrder]
+  );
 
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [albumToDelete, setAlbumToDelete] = useState<AlbumDto | null>(null);
@@ -97,28 +105,24 @@ export default function ArtistAlbums({ artistId }: Props) {
       .map((a) => a.id)
       .filter((id): id is number => typeof id === "number" && id > 0);
 
-    const missing = ids.filter((id) => !coversByAlbumId[id]);
+    const missing = ids.filter((id) => !imagesByAlbumId[id]);
     if (missing.length === 0) return;
 
     Promise.all(
       missing.map(async (albumId) => {
         try {
           const imgs = await listarImagensComUrls(albumId);
-          const capa = imgs.find((x) => x.ehCapa) ?? imgs[0];
-          if (!capa?.url) return null;
-          return { albumId, url: capa.url };
+          return { albumId, imgs };
         } catch {
-          return null;
+          return { albumId, imgs: [] as ImagemAlbumComUrlDto[] };
         }
       })
     ).then((results) => {
-      const next: Record<number, string> = {};
+      const next: Record<number, ImagemAlbumComUrlDto[]> = {};
       results.forEach((r) => {
-        if (r?.albumId && r.url) next[r.albumId] = r.url;
+        next[r.albumId] = r.imgs ?? [];
       });
-      if (Object.keys(next).length) {
-        setCoversByAlbumId((prev) => ({ ...prev, ...next }));
-      }
+      setImagesByAlbumId((prev) => ({ ...prev, ...next }));
     });
   }, [rows]);
 
@@ -129,14 +133,6 @@ export default function ArtistAlbums({ artistId }: Props) {
   function onClear() {
     setDraft({ titulo: "" });
     setQuery((prev) => ({ ...prev, page: 0, titulo: "" }));
-  }
-
-  function onSort(field: QueryState["sortField"]) {
-    setQuery((prev) => {
-      const isSame = prev.sortField === field;
-      const nextOrder: Order = isSame ? (prev.sortOrder === "asc" ? "desc" : "asc") : "asc";
-      return { ...prev, sortField: field, sortOrder: nextOrder, page: 0 };
-    });
   }
 
   function askDelete(album: AlbumDto) {
@@ -163,10 +159,14 @@ export default function ArtistAlbums({ artistId }: Props) {
   }
 
   return (
-    <Paper sx={{ p: 2 }}>
+    <>
       <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
-        <Typography variant="h6">Álbuns</Typography>
-        <Button variant="contained" onClick={() => navigate(`/albums/new?artistaId=${artistId}`)}>
+        <Typography variant="h5">Álbuns</Typography>
+        <Button variant="contained" onClick={() => navigate(`/albums/new?artistaId=${artistId}`)}
+          sx={{
+            borderRadius: '50px'
+          }}
+          startIcon={<AlbumIcon />}>
           Novo álbum
         </Button>
       </Stack>
@@ -187,8 +187,12 @@ export default function ArtistAlbums({ artistId }: Props) {
           />
 
           <Stack direction="row" spacing={1} sx={{ width: { xs: "100%", sm: "auto" } }}>
-            <Button type="submit" variant="contained" disabled={loading}>
-              {loading ? "Consultando..." : "Consultar"}
+            <Button type="submit" variant="contained" disabled={!!loading}
+              sx={{
+                borderRadius: '50px'
+              }}
+              startIcon={<SearchIcon />}
+            >              {loading ? "Consultando..." : "Consultar"}
             </Button>
             {draft.titulo.trim() ? (
               <Button variant="outlined" onClick={onClear}>
@@ -210,22 +214,29 @@ export default function ArtistAlbums({ artistId }: Props) {
       {rows.length === 0 && !loading ? (
         <Typography color="text.secondary">Este artista ainda não possui álbuns.</Typography>
       ) : (
-        <AlbumsTable
-          rows={rows}
-          total={total}
-          loading={loading}
-          page={query.page}
-          pageSize={query.size}
-          sortField={query.sortField}
-          sortOrder={query.sortOrder}
-          coverUrlById={coversByAlbumId}
-          onChangePage={(p) => setQuery((prev) => ({ ...prev, page: p }))}
-          onChangePageSize={(size) => setQuery((prev) => ({ ...prev, size, page: 0 }))}
-          onChangeSort={onSort}
-          onView={(r) => navigate(`/albums/view/${r.id}`)}
-          onEdit={(r) => navigate(`/albums/edit/${r.id}`)}
-          onDelete={askDelete}
-        />
+        <>
+          <AlbumsCards
+            rows={rows}
+            loading={loading}
+            imagesByAlbumId={imagesByAlbumId}
+            onView={(r) => navigate(`/albums/view/${r.id}`)}
+            onEdit={(r) => navigate(`/albums/edit/${r.id}`)}
+            onDelete={askDelete}
+          />
+
+          <TablePagination
+            component="div"
+            count={total}
+            page={query.page}
+            onPageChange={(_, newPage) => setQuery((prev) => ({ ...prev, page: newPage }))}
+            rowsPerPage={query.size}
+            onRowsPerPageChange={(e) =>
+              setQuery((prev) => ({ ...prev, size: Number(e.target.value), page: 0 }))
+            }
+            rowsPerPageOptions={[5, 10, 25, 50]}
+            labelRowsPerPage="Linhas"
+          />
+        </>
       )}
 
       <Dialog open={confirmOpen} onClose={() => (deleting ? null : setConfirmOpen(false))}>
@@ -244,6 +255,6 @@ export default function ArtistAlbums({ artistId }: Props) {
           </Button>
         </DialogActions>
       </Dialog>
-    </Paper>
+    </>
   );
 }

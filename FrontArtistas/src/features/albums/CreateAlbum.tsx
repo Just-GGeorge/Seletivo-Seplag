@@ -2,19 +2,22 @@ import { useState } from "react";
 import { Alert, Box, Paper, Typography } from "@mui/material";
 import { useForm } from "react-hook-form";
 import { useNavigate, useSearchParams } from "react-router-dom";
+
 import type { AlbumDto } from "./albumsTypes";
-import { criarAlbum } from "./albumsSlice";
+import { criarAlbumComUpload } from "./albumsSlice";
 import { AlbumForm } from "./components/AlbumForm";
-import { AlbumImages } from "./components/AlbumImages";
+import { AlbumImagesPicker } from "./components/AlbumImagesPicker";
 
 export default function CreateAlbum() {
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const artistaId = Number(params.get("artistaId") ?? "");
 
-  const [savedAlbumId, setSavedAlbumId] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | undefined>();
+
+  const [files, setFiles] = useState<File[]>([]);
+  const [indiceCapa, setIndiceCapa] = useState<number | undefined>(undefined);
 
   const { control, handleSubmit } = useForm<AlbumDto>({
     defaultValues: {
@@ -29,13 +32,21 @@ export default function CreateAlbum() {
     setError(undefined);
 
     try {
-      const created = await criarAlbum({
-        titulo: values.titulo.trim(),
-        dataLancamento: values.dataLancamento ?? null,
-        artistasIds: values.artistasIds ?? [],
-      });
 
-      if (created.id) setSavedAlbumId(created.id);
+      const res = await criarAlbumComUpload(
+        {
+          titulo: values.titulo.trim(),
+          dataLancamento: values.dataLancamento ?? null,
+          artistasIds: values.artistasIds ?? [],
+        },
+        files,
+        indiceCapa
+      );
+
+      if (res.album?.id) {
+  if (artistaId) navigate(`/artists/view/${artistaId}`, { replace: true });
+  else navigate("/artists", { replace: true });
+}
     } catch (err: any) {
       setError(err?.message ?? "Erro ao criar álbum");
     } finally {
@@ -63,7 +74,13 @@ export default function CreateAlbum() {
           onGoBack={() => navigate(-1)}
         />
 
-        {savedAlbumId ? <AlbumImages albumId={savedAlbumId} /> : null}
+        <AlbumImagesPicker
+          files={files}
+          indiceCapa={indiceCapa}
+          onFilesChange={setFiles}
+          onIndiceCapaChange={setIndiceCapa}
+          disabled={loading}
+        />
       </Paper>
     </Box>
   );

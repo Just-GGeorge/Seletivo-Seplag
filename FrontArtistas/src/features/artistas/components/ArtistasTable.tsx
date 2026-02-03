@@ -1,6 +1,5 @@
 import {
   IconButton,
-  Paper,
   Table,
   TableBody,
   TableCell,
@@ -56,7 +55,7 @@ export function ArtistasTable({
   const createSortHandler = (field: Props["sortField"]) => () => onChangeSort(field);
 
   return (
-    <TableContainer component={Paper} sx={{ mt: 2 }}>
+    <TableContainer component={Table} sx={{ mt: 2 }}>
       <Table size="small">
         <TableHead>
           <TableRow>

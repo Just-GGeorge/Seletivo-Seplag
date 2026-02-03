@@ -1,4 +1,6 @@
 import { Box, Button, Stack, TextField } from "@mui/material";
+import SearchIcon from '@mui/icons-material/Search';
+import CloseIcon from '@mui/icons-material/Close';
 
 type Props = {
   pesquisa: string;
@@ -27,12 +29,22 @@ export function ArtistasFilter({ pesquisa, loading, onPesquisaChange, onSearch, 
         />
 
         <Stack direction="row" spacing={1} sx={{ width: { xs: "100%", sm: "auto" } }}>
-          <Button type="submit" variant="contained" disabled={!!loading}>
+          <Button type="submit" variant="contained" disabled={!!loading}
+            sx={{
+              borderRadius: '50px'
+            }}
+            startIcon={<SearchIcon />}
+          >
             {loading ? "Consultando..." : "Consultar"}
+
           </Button>
 
           {onClear && pesquisa.trim() !== "" ? (
-            <Button variant="outlined" onClick={onClear}>
+            <Button variant="outlined" onClick={onClear}
+              sx={{
+                borderRadius: '50px'
+              }}
+              startIcon={<CloseIcon />}>
               Limpar
             </Button>
           ) : null}

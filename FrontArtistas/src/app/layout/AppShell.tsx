@@ -71,7 +71,7 @@ export function AppShell() {
             <MenuIcon />
           </IconButton>
           <Typography variant="h6" noWrap component="div">
-            CRUD Artistas/Álbuns
+            Discografia
           </Typography>
         </Toolbar>
       </AppBar>

@@ -55,14 +55,17 @@ export function ArtistaForm({ control, onSubmit, onGoBack, isLoading, isView }: 
         />
 
         <Stack direction="row" spacing={1} justifyContent="flex-end">
-          <Button variant="outlined" onClick={onGoBack}>
-            Voltar
-          </Button>
+
 
           {!isView ? (
-            <Button type="submit" variant="contained" disabled={isLoading}>
-              {isLoading ? "Salvando..." : "Salvar"}
-            </Button>
+            <>
+              <Button variant="outlined" onClick={onGoBack}>
+                Voltar
+              </Button>
+              <Button type="submit" variant="contained" disabled={isLoading}>
+                {isLoading ? "Salvando..." : "Salvar"}
+              </Button>
+            </>
           ) : null}
         </Stack>
       </Stack>

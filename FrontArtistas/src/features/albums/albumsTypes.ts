@@ -37,3 +37,8 @@ export type ListAlbumsParams = {
   size?: number;
   sort?: string;
 };
+
+export type AlbumComImagensDto = {
+  album: AlbumDto;
+  imagens: ImagemAlbumDto[];
+};

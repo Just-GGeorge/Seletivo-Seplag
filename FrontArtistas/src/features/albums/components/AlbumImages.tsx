@@ -1,10 +1,9 @@
-import  { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Alert,
   Box,
   Button,
   Card,
-  CardActions,
   CardContent,
   CardMedia,
   Chip,
@@ -19,7 +18,10 @@ import {
 import type { ImagemAlbumComUrlDto } from "../albumsTypes";
 import { definirCapa, deletarImagem, listarImagensComUrls, uploadImagens } from "../albumsSlice";
 
-
+import StarIcon from "@mui/icons-material/Star";
+import StarBorderIcon from "@mui/icons-material/StarBorder";
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+import { IconButton } from "@mui/material";
 type Props = {
   albumId: number;
   readOnly?: boolean;
@@ -148,37 +150,89 @@ export function AlbumImages({ albumId, readOnly }: Props) {
       ) : null}
 
       <Stack direction="row" flexWrap="wrap" gap={2}>
-        {items.map((it) => (
-          <Card key={it.id} sx={{ width: 220 }}>
-            <CardMedia component="img" height="140" image={it.url} />
-            <CardContent sx={{ pb: 1 }}>
-              <Stack direction="row" spacing={1} alignItems="center">
-                {it.ehCapa ? <Chip size="small" label="Capa" color="primary" /> : null}
-                {!it.ehCapa && capaId ? <Chip size="small" label="Imagem" /> : null}
-              </Stack>
-            </CardContent>
+        {items.map((it) => {
+          const isCover = it.ehCapa === true;
 
-            {!readOnly ? (
-              <CardActions sx={{ pt: 0 }}>
-                <Button
-                  size="small"
-                  disabled={loading || it.ehCapa === true}
-                  onClick={() => onSetCapa(it.id)}
-                >
-                  Definir capa
-                </Button>
-                <Button
-                  size="small"
-                  color="error"
-                  disabled={loading}
-                  onClick={() => onAskDelete(it)}
-                >
-                  Remover
-                </Button>
-              </CardActions>
-            ) : null}
-          </Card>
-        ))}
+          return (
+            <Card key={it.id} sx={{ width: 220, overflow: "hidden" }}>
+              <Box sx={{ position: "relative" }}>
+                <CardMedia
+                  component="img"
+                  image={it.url}
+                  sx={{
+                    height: 150,
+                    objectFit: "contain",
+                    bgcolor: "action.hover",
+                    display: "block",
+                  }}
+                />
+
+                {!readOnly ? (
+                  <>
+                    <IconButton
+                      size="small"
+                      disabled={loading}
+                      onClick={() => onSetCapa(it.id)}
+                      sx={{
+                        position: "absolute",
+                        top: 8,
+                        left: 8,
+                        bgcolor: "background.paper",
+                      }}
+                    >
+                      {isCover ? <StarIcon fontSize="small" /> : <StarBorderIcon fontSize="small" />}
+                    </IconButton>
+
+                    <IconButton
+                      size="small"
+                      disabled={loading}
+                      onClick={() => onAskDelete(it)}
+                      sx={{
+                        position: "absolute",
+                        top: 8,
+                        right: 8,
+                        bgcolor: "background.paper",
+                      }}
+                    >
+                      <DeleteOutlineIcon fontSize="small" />
+                    </IconButton>
+
+                    {isCover ? (
+                      <Box sx={{ position: "absolute", bottom: 8, left: 8 }}>
+                        <Chip size="small" label="Capa" color="primary" />
+                      </Box>
+                    ) : null}
+                  </>
+                ) : (
+                  isCover ? (
+                    <Box sx={{ position: "absolute", bottom: 8, left: 8 }}>
+                      <Chip size="small" label="Capa" color="primary" />
+                    </Box>
+                  ) : null
+                )}
+              </Box>
+
+              <CardContent sx={{ pb: 1 }}>
+                <Stack direction="row" spacing={1} alignItems="center">
+                  {!isCover && capaId ? <Chip size="small" label="Imagem" /> : null}
+                </Stack>
+              </CardContent>
+
+              {/* {!readOnly ? (
+                <CardActions sx={{ pt: 0 }}>
+                  <Button
+                    size="small"
+                    color="error"
+                    disabled={loading}
+                    onClick={() => onAskDelete(it)}
+                  >
+                    Remover
+                  </Button>
+                </CardActions>
+              ) : null} */}
+            </Card>
+          );
+        })}
       </Stack>
 
       <Dialog open={confirmOpen} onClose={() => (deleting ? null : setConfirmOpen(false))}>
@@ -187,11 +241,7 @@ export function AlbumImages({ albumId, readOnly }: Props) {
           <DialogContentText>Deseja realmente remover esta imagem?</DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button
-            variant="outlined"
-            disabled={deleting}
-            onClick={() => setConfirmOpen(false)}
-          >
+          <Button variant="outlined" disabled={deleting} onClick={() => setConfirmOpen(false)}>
             Não
           </Button>
           <Button variant="contained" disabled={deleting} onClick={onConfirmDelete}>
@@ -201,4 +251,5 @@ export function AlbumImages({ albumId, readOnly }: Props) {
       </Dialog>
     </Box>
   );
+
 }

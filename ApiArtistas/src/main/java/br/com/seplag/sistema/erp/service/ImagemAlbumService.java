@@ -228,4 +228,65 @@ public class ImagemAlbumService {
             );
         }).toList();
     }
+
+    @Transactional
+    public List<ImagemAlbumDto> uploadMultiplasParaAlbumOpcional(Long albumId, List<MultipartFile> arquivos, Integer indiceCapa) {
+        Album album = albumRepository.findById(albumId)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Álbum não encontrado: " + albumId));
+
+        if (arquivos == null || arquivos.isEmpty()) {
+            return List.of();
+        }
+
+        Integer capaIdx = normalizeIndiceCapa(indiceCapa, arquivos.size());
+
+        imagemAlbumRepository.desmarcarCapasDoAlbum(albumId);
+
+        List<String> objectKeysEnviados = new java.util.ArrayList<>();
+        List<ImagemAlbumDto> result = new java.util.ArrayList<>();
+
+        try {
+            for (int i = 0; i < arquivos.size(); i++) {
+                MultipartFile arquivo = arquivos.get(i);
+                validarArquivo(arquivo);
+
+                String contentType = arquivo.getContentType();
+                String objectKey = storage.gerarObjectKeyAlbum(albumId, contentType);
+
+                storage.upload(objectKey, arquivo.getInputStream(), arquivo.getSize(), contentType);
+                objectKeysEnviados.add(objectKey);
+
+                ImagemAlbum img = new ImagemAlbum();
+                img.setAlbum(album);
+                img.setChaveObjeto(objectKey);
+                img.setTipoConteudo(contentType);
+                img.setTamanhoBytes(arquivo.getSize());
+                img.setEhCapa(i == capaIdx);
+
+                ImagemAlbum salvo = imagemAlbumRepository.save(img);
+
+                result.add(new ImagemAlbumDto(
+                        salvo.getId(),
+                        salvo.getChaveObjeto(),
+                        salvo.getTipoConteudo(),
+                        salvo.getTamanhoBytes(),
+                        salvo.isEhCapa()
+                ));
+            }
+
+            return result;
+        } catch (Exception e) {
+            for (String key : objectKeysEnviados) {
+                try { storage.delete(key); } catch (Exception ignored) {}
+            }
+            throw new RuntimeException("Falha ao enviar imagens para o MinIO", e);
+        }
+    }
+
+    private Integer normalizeIndiceCapa(Integer indiceCapa, int total) {
+        if (total <= 0) return 0;
+        if (indiceCapa == null) return 0;
+        if (indiceCapa < 0 || indiceCapa >= total) return 0;
+        return indiceCapa;
+    }
 }
