@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
+import java.util.List;
 
 public interface AlbumRepository extends JpaRepository<Album, Long> {
 
@@ -17,11 +18,11 @@ public interface AlbumRepository extends JpaRepository<Album, Long> {
         SELECT DISTINCT al
         FROM Album al
         LEFT JOIN al.artistas ar
-        WHERE (:artistaId IS NULL OR ar.id = :artistaId)
-          AND (:titulo = '' OR LOWER(al.titulo) LIKE LOWER(CONCAT('%', :titulo, '%')))
+        WHERE (:titulo IS NULL OR :titulo = '' OR LOWER(al.titulo) LIKE CONCAT('%', LOWER(:titulo), '%'))
+        AND (:artistaIds IS NULL OR ar.id IN :artistaIds)
     """)
     Page<Album> buscarComFiltro(
-            @Param("artistaId") Long artistaId,
+            @Param("artistaIds") List<Long> artistaIds,
             @Param("titulo") String titulo,
             Pageable pageable
     );

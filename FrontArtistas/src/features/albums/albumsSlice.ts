@@ -1,4 +1,5 @@
 import { apiSlice } from "../../core/api/apiSlice";
+import { listarArtistas } from "../artistas/artistasSlice";
 import type {
   AlbumComImagensDto,
   AlbumDto,
@@ -13,7 +14,12 @@ const ALBUMS_ENDPOINT = "/albuns";
 function buildAlbumsListParams(p: ListAlbumsParams) {
   const qs = new URLSearchParams();
 
-  if (p.artistaId !== undefined) qs.set("artistaId", String(p.artistaId));
+  if (p.artistasIds?.length) {
+    p.artistasIds.forEach((id) => qs.append("artistaIds", String(id)));
+  } else if (p.artistaId !== undefined) {
+    qs.set("artistaId", String(p.artistaId));
+  }
+
   qs.set("titulo", p.titulo ?? "");
   qs.set("page", String(p.page ?? 0));
   qs.set("size", String(p.size ?? 10));
@@ -25,6 +31,21 @@ function buildAlbumsListParams(p: ListAlbumsParams) {
 export async function listarAlbuns(params: ListAlbumsParams) {
   const qs = buildAlbumsListParams(params);
   return apiSlice.get<PageResponse<AlbumDto>>(`${ALBUMS_ENDPOINT}?${qs}`);
+}
+
+export type ArtistaOption = { id: number; nome: string };
+
+export async function listarArtistasOptions() {
+  const res = await listarArtistas({
+    pesquisa: "",
+    page: 0,
+    size: 200,
+    sort: "nome,asc",
+  });
+
+  return (res.content ?? [])
+    .filter((a) => typeof a.id === "number")
+    .map((a) => ({ id: a.id as number, nome: a.nome ?? "" }));
 }
 
 export async function buscarAlbumPorId(id: number) {
@@ -52,22 +73,6 @@ export async function criarAlbumComUpload(dto: AlbumDto, arquivos?: File[], indi
   return apiSlice.post<AlbumComImagensDto>(url, form);
 }
 
-export async function uploadImagens(albumId: number, arquivos: File[], indiceCapa?: number) {
-  const form = new FormData();
-  arquivos.forEach((f) => form.append("arquivos", f));
-
-  const qs = new URLSearchParams();
-  if (indiceCapa !== undefined && indiceCapa !== null) qs.set("indiceCapa", String(indiceCapa));
-
-  const url =
-    qs.toString().length > 0
-      ? `${ALBUMS_ENDPOINT}/${albumId}/imagens/upload?${qs.toString()}`
-      : `${ALBUMS_ENDPOINT}/${albumId}/imagens/upload`;
-
-  return apiSlice.post<ImagemAlbumDto[]>(url, form);
-}
-
-
 export async function atualizarAlbum(id: number, payload: AlbumDto) {
   return apiSlice.put<AlbumDto>(`${ALBUMS_ENDPOINT}/${id}`, payload);
 }
@@ -86,6 +91,23 @@ export async function listarImagensComUrls(albumId: number) {
 
 export async function adicionarImagem(albumId: number, dto: ImagemAlbumDto) {
   return apiSlice.post<ImagemAlbumDto>(`${ALBUMS_ENDPOINT}/${albumId}/imagens`, dto);
+}
+
+export async function uploadImagens(albumId: number, arquivos: File[], indiceCapa?: number) {
+  const form = new FormData();
+  arquivos.forEach((f) => form.append("arquivos", f));
+
+  const qs = new URLSearchParams();
+  if (indiceCapa !== undefined && indiceCapa !== null) qs.set("indiceCapa", String(indiceCapa));
+
+  const url =
+    qs.toString().length > 0
+      ? `${ALBUMS_ENDPOINT}/${albumId}/imagens/upload?${qs.toString()}`
+      : `${ALBUMS_ENDPOINT}/${albumId}/imagens/upload`;
+
+  return apiSlice.post<ImagemAlbumDto[]>(url, form, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
 }
 
 export async function definirCapa(albumId: number, imagemId: number) {

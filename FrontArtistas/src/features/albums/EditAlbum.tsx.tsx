@@ -3,7 +3,7 @@ import { Alert, Box, Paper, Stack, Tooltip, Typography, IconButton, Button, Divi
 import { useForm } from "react-hook-form";
 import { useNavigate, useParams } from "react-router-dom";
 import type { AlbumDto } from "./albumsTypes";
-import { atualizarAlbum, buscarAlbumPorId } from "./albumsSlice";
+import { atualizarAlbum, buscarAlbumPorId, listarArtistasOptions, type ArtistaOption } from "./albumsSlice";
 import { AlbumForm } from "./components/AlbumForm";
 import { AlbumImages } from "./components/AlbumImages";
 import EditIcon from "@mui/icons-material/Edit";
@@ -19,6 +19,12 @@ export default function EditAlbum() {
   const [isEditing, setIsEditing] = useState(false);
 
   const [initial, setInitial] = useState<AlbumDto | null>(null);
+
+  const [artistOptions, setArtistOptions] = useState<ArtistaOption[]>([]);
+
+  useEffect(() => {
+    listarArtistasOptions().then(setArtistOptions).catch(() => setArtistOptions([]));
+  }, []);
 
   const { control, handleSubmit, reset } = useForm<AlbumDto>({
     defaultValues: { titulo: "", dataLancamento: null, artistasIds: [] },
@@ -115,6 +121,7 @@ export default function EditAlbum() {
           isView={!isEditing}
           hideActions={!isEditing}
           onCancel={onCancelEdit}
+          artistOptions={artistOptions}
 
         />
 

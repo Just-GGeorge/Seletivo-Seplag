@@ -1,5 +1,5 @@
 import { apiSlice } from "../../core/api/apiSlice";
-import type { ArtistaDto, ListArtistasParams, PageResponse } from "./artistasTypes";
+import type { ArtistaDto, ArtistaListDto, ListArtistasParams, PageResponse } from "./artistasTypes";
 
 const ENDPOINT = "/artistas";
 
@@ -17,7 +17,7 @@ function buildListParams(p: ListArtistasParams) {
 
 export async function listarArtistas(params: ListArtistasParams) {
   const qs = buildListParams(params);
-  return apiSlice.get<PageResponse<ArtistaDto>>(`${ENDPOINT}?${qs}`);
+  return apiSlice.get<PageResponse<ArtistaListDto>>(`${ENDPOINT}?${qs}`);
 }
 
 export async function buscarArtistaPorId(id: number) {

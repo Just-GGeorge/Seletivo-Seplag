@@ -79,159 +79,222 @@ export function AlbumsCards({ rows, loading, imagesByAlbumId, onView, onEdit, on
     const selectedAlbum = menuAlbumId ? albumById[menuAlbumId] : undefined;
 
     return (
-        <>
+  <>
+    <Box
+      sx={{
+        display: "grid",
+        gridTemplateColumns: { xs: "1fr", sm: "repeat(2, 1fr)", md: "repeat(3, 1fr)" },
+        gap: 1.5,
+        mt: 2,
+        maxWidth: 1000,
+        opacity: loading ? 0.7 : 1,
+        pointerEvents: loading ? "none" : "auto",
+      }}
+    >
+      {rows.map((album) => {
+        const id = album.id ?? 0;
+        const imgs = id ? imagesByAlbumId[id] ?? [] : [];
+        const capaIdx = imgs.findIndex((x) => x.ehCapa);
+        const idx = currentIndex(id, imgs.length);
+        const effectiveIdx = capaIdx >= 0 && (indexById[id] == null) ? capaIdx : idx;
+        const current = imgs[effectiveIdx];
+
+        return (
+          <Card
+            key={id}
+            onClick={() => onEdit?.(album)}
+            sx={{
+              cursor: onEdit ? "pointer" : "default",
+              overflow: "hidden",
+              borderRadius: 2.5,
+              border: "1px solid rgba(255,255,255,0.08)",
+              bgcolor: "background.paper",
+              transition: "transform 120ms ease, border-color 120ms ease",
+              "&:hover": onEdit
+                ? {
+                    transform: "translateY(-2px)",
+                    borderColor: "rgba(255,255,255,0.14)",
+                  }
+                : undefined,
+            }}
+          >
             <Box
-                sx={{
-                    display: "grid",
-                    gridTemplateColumns: { xs: "1fr", sm: "repeat(2, 1fr)", md: "repeat(3, 1fr)" },
-                    gap: 2,
-                    mt: 2,
-                    opacity: loading ? 0.7 : 1,
-                    pointerEvents: loading ? "none" : "auto",
-                }}
+              sx={{
+                position: "relative",
+                p: 1.1,
+                pb: 1.5,
+              }}
             >
-                {rows.map((album) => {
-                    const id = album.id ?? 0;
-                    const imgs = id ? imagesByAlbumId[id] ?? [] : [];
-                    const capaIdx = imgs.findIndex((x) => x.ehCapa);
-                    const idx = currentIndex(id, imgs.length);
-                    const effectiveIdx = capaIdx >= 0 && (indexById[id] == null) ? capaIdx : idx;
-                    const current = imgs[effectiveIdx];
+              <Box
+                sx={{
+                  position: "relative",
+                  width: "100%",
+                  aspectRatio: "1 / 1",
+                  borderRadius: 2.5,
+                  bgcolor: "rgba(255,255,255,0.06)",
+                  border: "1px solid rgba(255,255,255,0.10)",
+                  boxShadow: "0 6px 18px rgba(0,0,0,0.22)",
+                  p: 0.75,
+                  overflow: "hidden",
+                }}
+              >
+                {current?.url ? (
+                  <Box
+                    component="img"
+                    src={current.url}
+                    alt={album.titulo ?? "capa do álbum"}
+                    sx={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "contain",
+                      display: "block",
+                      borderRadius: 2,
+                      bgcolor: "rgba(0,0,0,0.25)",
+                    }}
+                  />
+                ) : (
+                  <Box
+                    sx={{
+                      width: "100%",
+                      height: "100%",
+                      borderRadius: 2,
+                      bgcolor: "rgba(0,0,0,0.20)",
+                    }}
+                  />
+                )}
 
-                    return (
-                        <Card key={id}
-                            onClick={() => onEdit?.(album)}
-                            sx={{
-                                overflow: "hidden", cursor: onEdit ? "pointer" : "default"
-                            }}>
-                            <Box sx={{ position: "relative", height: 200, bgcolor: "action.hover" }}>
-                                {current?.url ? (
-                                    <Box sx={{ position: "relative", height: 200, bgcolor: "action.hover" }}>
-                                        <Box
-                                            component="img"
-                                            src={current.url}
-                                            sx={{
-                                                width: "100%",
-                                                height: "100%",
-                                                objectFit: "contain",
-                                                display: "block",
-                                                bgcolor: "action.hover",
-                                            }}
-                                        />
-                                    </Box>
-                                ) : (
-                                    <Box sx={{ width: "100%", height: "100%" }} />
-                                )}
+                <Box sx={{ position: "absolute", top: 8, right: 8 }}>
+                  <IconButton
+                    size="small"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onOpenMenu(e, id);
+                    }}
+                    sx={{
+                      bgcolor: "rgba(17,24,39,0.72)",
+                      border: "1px solid rgba(255,255,255,0.10)",
+                      backdropFilter: "blur(6px)",
+                      "&:hover": { bgcolor: "rgba(17,24,39,0.88)" },
+                    }}
+                  >
+                    <SettingsIcon fontSize="small" />
+                  </IconButton>
+                </Box>
 
-                                <Box sx={{ position: "absolute", top: 8, right: 8 }}>
-                                    <IconButton
-                                        size="small"
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            onOpenMenu(e, id);
-                                        }}
-                                        sx={{ bgcolor: "background.paper" }}
-                                    >
-                                        <SettingsIcon fontSize="small" />
-                                    </IconButton>
-                                </Box>
+                {imgs.length > 1 ? (
+                  <>
+                    <Box
+                      sx={{
+                        position: "absolute",
+                        top: "50%",
+                        left: 8,
+                        transform: "translateY(-50%)",
+                      }}
+                    >
+                      <IconButton
+                        size="small"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setPrev(id, imgs.length);
+                        }}
+                        sx={{
+                          bgcolor: "rgba(17,24,39,0.72)",
+                          border: "1px solid rgba(255,255,255,0.10)",
+                          backdropFilter: "blur(6px)",
+                          "&:hover": { bgcolor: "rgba(17,24,39,0.88)" },
+                        }}
+                      >
+                        <ChevronLeftIcon fontSize="small" />
+                      </IconButton>
+                    </Box>
 
-                                {imgs.length > 1 ? (
-                                    <>
-                                        <Box sx={{ position: "absolute", top: "50%", left: 8, transform: "translateY(-50%)" }}>
-                                            <IconButton
-                                                size="small"
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    setPrev(id, imgs.length);
-                                                }}
-                                                sx={{ bgcolor: "background.paper" }}
-                                            >
-                                                <ChevronLeftIcon fontSize="small" />
-                                            </IconButton>
-                                        </Box>
+                    <Box
+                      sx={{
+                        position: "absolute",
+                        top: "50%",
+                        right: 8,
+                        transform: "translateY(-50%)",
+                      }}
+                    >
+                      <IconButton
+                        size="small"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setNext(id, imgs.length);
+                        }}
+                        sx={{
+                          bgcolor: "rgba(17,24,39,0.72)",
+                          border: "1px solid rgba(255,255,255,0.10)",
+                          backdropFilter: "blur(6px)",
+                          "&:hover": { bgcolor: "rgba(17,24,39,0.88)" },
+                        }}
+                      >
+                        <ChevronRightIcon fontSize="small" />
+                      </IconButton>
+                    </Box>
 
-                                        <Box sx={{ position: "absolute", top: "50%", right: 8, transform: "translateY(-50%)" }}>
-                                            <IconButton
-                                                size="small"
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    setNext(id, imgs.length)
-                                                }}
-                                                sx={{ bgcolor: "background.paper" }}
-                                            >
-                                                <ChevronRightIcon fontSize="small" />
-                                            </IconButton>
-                                        </Box>
-
-                                        <Box sx={{ position: "absolute", bottom: 8, left: 8 }}>
-                                            <Chip
-                                                size="small"
-                                                label={`${effectiveIdx + 1}/${imgs.length}`}
-                                                sx={{ bgcolor: "background.paper" }}
-                                            />
-                                        </Box>
-                                    </>
-                                ) : null}
-                            </Box>
-
-                            <CardContent>
-                                <Stack spacing={0.5}>
-                                    <Tooltip title={album.titulo}>
-                                        <Typography variant="subtitle1" noWrap>
-                                            {album.titulo}
-                                        </Typography>
-                                    </Tooltip>
-
-                                    <Typography variant="body2" color="text.secondary">
-                                        {album.dataLancamento ?? ""}
-                                    </Typography>
-
-                                    <ButtonRow
-                                        onView={() => onView(album)}
-                                        showQuickView={imgs.length === 0}
-                                    />
-                                </Stack>
-                            </CardContent>
-                        </Card>
-                    );
-                })}
+                    <Box sx={{ position: "absolute", bottom: 8, left: 8 }}>
+                      <Chip
+                        size="small"
+                        label={`${effectiveIdx + 1}/${imgs.length}`}
+                        sx={{
+                          bgcolor: "rgba(17,24,39,0.72)",
+                          border: "1px solid rgba(255,255,255,0.10)",
+                          backdropFilter: "blur(6px)",
+                        }}
+                      />
+                    </Box>
+                  </>
+                ) : null}
+              </Box>
             </Box>
 
-            <Menu anchorEl={menuAnchor} open={openMenu} onClose={onCloseMenu}>
-                {/* <MenuItem
-                    onClick={() => {
-                        if (selectedAlbum) onView(selectedAlbum);
-                        onCloseMenu();
-                    }}
-                >
-                    Visualizar
-                </MenuItem> */}
+            <CardContent sx={{ pt: 0, pb: 1.5 }}>
+              <Stack spacing={0.35}>
+                <Tooltip title={album.titulo}>
+                  <Typography variant="subtitle1" noWrap sx={{ fontSize: "0.95rem" }}>
+                    {album.titulo}
+                  </Typography>
+                </Tooltip>
 
-                {onEdit ? (
-                    <MenuItem
-                        onClick={() => {
-                            if (selectedAlbum) onEdit(selectedAlbum);
-                            onCloseMenu();
-                        }}
-                    >
-                        Editar
-                    </MenuItem>
-                ) : null}
+                <Typography variant="body2" color="text.secondary" sx={{ fontSize: "0.9rem" }}>
+                  {album.dataLancamento ?? ""}
+                </Typography>
 
-                {onDelete ? (
-                    <MenuItem
-                        onClick={() => {
-                            if (selectedAlbum) onDelete(selectedAlbum);
-                            onCloseMenu();
-                        }}
-                    >
-                        Excluir
-                    </MenuItem>
-                ) : null}
-            </Menu>
-        </>
-    );
+                <ButtonRow onView={() => onView(album)} showQuickView={imgs.length === 0} />
+              </Stack>
+            </CardContent>
+          </Card>
+        );
+      })}
+    </Box>
+
+    <Menu anchorEl={menuAnchor} open={openMenu} onClose={onCloseMenu}>
+      {onEdit ? (
+        <MenuItem
+          onClick={() => {
+            if (selectedAlbum) onEdit(selectedAlbum);
+            onCloseMenu();
+          }}
+        >
+          Editar
+        </MenuItem>
+      ) : null}
+
+      {onDelete ? (
+        <MenuItem
+          onClick={() => {
+            if (selectedAlbum) onDelete(selectedAlbum);
+            onCloseMenu();
+          }}
+        >
+          Excluir
+        </MenuItem>
+      ) : null}
+    </Menu>
+  </>
+);
+
 }
 
 function ButtonRow({ onView, showQuickView }: { onView: () => void; showQuickView: boolean }) {

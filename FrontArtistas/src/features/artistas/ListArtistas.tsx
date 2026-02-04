@@ -11,8 +11,8 @@ import PersonAddOutlinedIcon from '@mui/icons-material/PersonAddOutlined';
 import { useNavigate } from "react-router-dom";
 import { ArtistasFilter } from "./components/ArtistasFilter";
 import { ArtistasTable } from "./components/ArtistasTable";
-import type { ArtistaDto } from "./artistasTypes";
 import { deletarArtista, listarArtistas } from "./artistasSlice";
+import type { ArtistaListDto } from "./artistasTypes";
 
 type Order = "asc" | "desc";
 
@@ -20,7 +20,7 @@ type QueryState = {
   pesquisa: string;
   page: number;
   size: number;
-  sortField: "id" | "nome" | "genero";
+  sortField: "id" | "nome" | "genero" | "qtdAlbuns";
   sortOrder: Order;
 };
 
@@ -50,13 +50,13 @@ export default function ListArtistas() {
   const [query, setQuery] = useState<QueryState>(() => loadState());
   const [draft, setDraft] = useState<DraftState>(() => ({ pesquisa: query.pesquisa }));
 
-  const [rows, setRows] = useState<ArtistaDto[]>([]);
+  const [rows, setRows] = useState<ArtistaListDto[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | undefined>(undefined);
 
   const [confirmOpen, setConfirmOpen] = useState(false);
-  const [rowToDelete, setRowToDelete] = useState<ArtistaDto | null>(null);
+  const [rowToDelete, setRowToDelete] = useState<ArtistaListDto | null>(null);
   const [deleting, setDeleting] = useState(false);
 
 
@@ -109,7 +109,7 @@ export default function ListArtistas() {
     });
   }
 
-  function onAskDelete(row: ArtistaDto) {
+  function onAskDelete(row: ArtistaListDto) {
     setRowToDelete(row);
     setConfirmOpen(true);
   }
@@ -136,7 +136,7 @@ export default function ListArtistas() {
     <Box>
       <Paper sx={{ p: 2 }}>
 
-        <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
+        <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 2 }}>
           <Typography variant="h5">Artistas</Typography>
           <Button
             variant="contained"

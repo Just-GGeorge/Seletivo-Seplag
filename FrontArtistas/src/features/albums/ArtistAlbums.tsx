@@ -15,7 +15,7 @@ import {
   TablePagination,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import AlbumIcon from '@mui/icons-material/Album';
+import PlaylistAddIcon from '@mui/icons-material/PlaylistAdd';
 import SearchIcon from '@mui/icons-material/Search';
 
 
@@ -160,13 +160,13 @@ export default function ArtistAlbums({ artistId }: Props) {
 
   return (
     <>
-      <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
+      <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 2 }}>
         <Typography variant="h5">Álbuns</Typography>
         <Button variant="contained" onClick={() => navigate(`/albums/new?artistaId=${artistId}`)}
           sx={{
             borderRadius: '50px'
           }}
-          startIcon={<AlbumIcon />}>
+          startIcon={<PlaylistAddIcon />}>
           Novo álbum
         </Button>
       </Stack>

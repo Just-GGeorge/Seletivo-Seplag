@@ -64,10 +64,14 @@ public class AlbumService {
     }
 
     @Transactional(readOnly = true)
-    public Page<AlbumDto> listar(Long artistaId, String titulo, Pageable pageable) {
-        return albumRepository.buscarComFiltro(artistaId, titulo, pageable)
+    public Page<AlbumDto> listar(List<Long> artistaIds, String titulo, Pageable pageable) {
+        if (artistaIds != null && artistaIds.isEmpty()) {
+            artistaIds = null;
+        }
+        return albumRepository.buscarComFiltro(artistaIds, titulo, pageable)
                 .map(this::toDto);
     }
+
 
     @Transactional(readOnly = true)
     public AlbumDto buscarPorId(Long id) {

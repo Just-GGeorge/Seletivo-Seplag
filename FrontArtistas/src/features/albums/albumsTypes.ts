@@ -32,6 +32,7 @@ export type PageResponse<T> = {
 
 export type ListAlbumsParams = {
   artistaId?: number;
+  artistasIds?: number[];
   titulo?: string;
   page?: number;
   size?: number;

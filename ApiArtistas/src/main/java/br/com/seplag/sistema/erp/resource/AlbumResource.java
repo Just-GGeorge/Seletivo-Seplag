@@ -36,11 +36,11 @@ public class AlbumResource {
 
     @GetMapping
     public ResponseEntity<Page<AlbumDto>> listar(
-            @RequestParam(required = false) Long artistaId,
+            @RequestParam(required = false) List<Long> artistaIds,
             @RequestParam(defaultValue = "") String titulo,
             @PageableDefault(size = 10, sort = "id", direction = Sort.Direction.ASC) Pageable pageable
     ) {
-        return ResponseEntity.ok(albumService.listar(artistaId, titulo, pageable));
+        return ResponseEntity.ok(albumService.listar(artistaIds, titulo, pageable));
     }
 
     @GetMapping("/{id}")

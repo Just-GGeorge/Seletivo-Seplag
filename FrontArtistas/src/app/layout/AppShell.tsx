@@ -14,8 +14,10 @@ import {
   Divider,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
-import PeopleIcon from "@mui/icons-material/People";
+import Groups2Icon from '@mui/icons-material/Groups2';
 import LogoutIcon from "@mui/icons-material/Logout";
+import AlbumIcon from '@mui/icons-material/Album';
+
 import { useState } from "react";
 import { authFacade } from "../../core/auth/AuthFacade";
 
@@ -36,9 +38,16 @@ export function AppShell() {
       <List>
         <ListItemButton onClick={() => navigate("/artists")}>
           <ListItemIcon>
-            <PeopleIcon />
+            <Groups2Icon />
           </ListItemIcon>
           <ListItemText primary="Artistas" />
+        </ListItemButton>
+
+        <ListItemButton onClick={() => navigate("/albums")}>
+          <ListItemIcon>
+            <AlbumIcon />
+          </ListItemIcon>
+          <ListItemText primary="Álbuns" />
         </ListItemButton>
 
         <ListItemButton

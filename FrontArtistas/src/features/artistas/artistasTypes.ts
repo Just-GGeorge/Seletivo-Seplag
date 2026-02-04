@@ -4,6 +4,14 @@ export type ArtistaDto = {
   genero: string;
 };
 
+export type ArtistaListDto = {
+  id: number;
+  nome: string;
+  genero: string;
+  qtdAlbuns: number;
+};
+
+
 export type PageResponse<T> = {
   content: T[];
   totalElements: number;

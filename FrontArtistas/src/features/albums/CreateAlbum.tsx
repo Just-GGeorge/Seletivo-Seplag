@@ -1,10 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Alert, Box, Paper, Typography } from "@mui/material";
 import { useForm } from "react-hook-form";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
 import type { AlbumDto } from "./albumsTypes";
-import { criarAlbumComUpload } from "./albumsSlice";
+import { criarAlbumComUpload, listarArtistasOptions, type ArtistaOption } from "./albumsSlice";
 import { AlbumForm } from "./components/AlbumForm";
 import { AlbumImagesPicker } from "./components/AlbumImagesPicker";
 
@@ -18,6 +18,12 @@ export default function CreateAlbum() {
 
   const [files, setFiles] = useState<File[]>([]);
   const [indiceCapa, setIndiceCapa] = useState<number | undefined>(undefined);
+
+  const [artistOptions, setArtistOptions] = useState<ArtistaOption[]>([]);
+
+  useEffect(() => {
+    listarArtistasOptions().then(setArtistOptions).catch(() => setArtistOptions([]));
+  }, []);
 
   const { control, handleSubmit } = useForm<AlbumDto>({
     defaultValues: {
@@ -44,9 +50,9 @@ export default function CreateAlbum() {
       );
 
       if (res.album?.id) {
-  if (artistaId) navigate(`/artists/view/${artistaId}`, { replace: true });
-  else navigate("/artists", { replace: true });
-}
+        if (artistaId) navigate(`/artists/view/${artistaId}`, { replace: true });
+        else navigate("/artists", { replace: true });
+      }
     } catch (err: any) {
       setError(err?.message ?? "Erro ao criar álbum");
     } finally {
@@ -71,8 +77,10 @@ export default function CreateAlbum() {
           control={control}
           onSubmit={handleSubmit(onSubmit)}
           isLoading={loading}
-          onGoBack={() => navigate(-1)}
+          onCancel={() => navigate(-1)}
+          artistOptions={artistOptions}
         />
+
 
         <AlbumImagesPicker
           files={files}

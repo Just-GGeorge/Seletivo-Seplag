@@ -13,28 +13,28 @@ import {
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
-import type { ArtistaDto } from "../artistasTypes";
+import type { ArtistaListDto } from "../artistasTypes";
 
 type Order = "asc" | "desc";
 
 type Props = {
-  rows: ArtistaDto[];
+  rows: ArtistaListDto[];
   loading: boolean;
 
   page: number;
   pageSize: number;
   total: number;
 
-  sortField: "id" | "nome" | "genero";
+  sortField: "id" | "nome" | "genero" | "qtdAlbuns";
   sortOrder: Order;
 
   onChangePage: (page: number) => void;
   onChangePageSize: (size: number) => void;
   onChangeSort: (field: Props["sortField"]) => void;
 
-  onView: (row: ArtistaDto) => void;
-  onEdit?: (row: ArtistaDto) => void;
-  onDelete?: (row: ArtistaDto) => void;
+  onView: (row: ArtistaListDto) => void;
+  onEdit?: (row: ArtistaListDto) => void;
+  onDelete?: (row: ArtistaListDto) => void;
 };
 
 export function ArtistasTable({
@@ -89,11 +89,24 @@ export function ArtistasTable({
               </TableSortLabel>
             </TableCell>
 
+            <TableCell
+              sortDirection={sortField === "qtdAlbuns" ? sortOrder : false}
+              align="center"
+              sx={{ textAlign: "center" }}
+            >
+              <TableSortLabel
+                active={sortField === "qtdAlbuns"}
+                direction={sortField === "qtdAlbuns" ? sortOrder : "asc"}
+                onClick={createSortHandler("qtdAlbuns")}
+              >
+                Álbuns
+              </TableSortLabel>
+            </TableCell>
+
             <TableCell align="right" sx={{ textAlign: "right", pr: 1 }}>
               Ações
             </TableCell>
           </TableRow>
-
         </TableHead>
 
         <TableBody>
@@ -102,6 +115,9 @@ export function ArtistasTable({
               <TableCell>{r.id}</TableCell>
               <TableCell>{r.nome}</TableCell>
               <TableCell>{r.genero}</TableCell>
+              <TableCell align="center" sx={{ textAlign: "center" }}>
+                {r.qtdAlbuns ?? 0}
+              </TableCell>
               <TableCell align="right" sx={{ textAlign: "right", pr: 1, whiteSpace: "nowrap" }}>
                 <Tooltip title="Visualizar">
                   <IconButton onClick={() => onView(r)} size="small">
@@ -130,7 +146,7 @@ export function ArtistasTable({
 
           {!loading && rows.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={4} align="center">
+              <TableCell colSpan={5} align="center">
                 Nenhum artista encontrado.
               </TableCell>
             </TableRow>

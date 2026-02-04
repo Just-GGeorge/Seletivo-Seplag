@@ -1,7 +1,8 @@
-import { Box, Button, Stack, TextField } from "@mui/material";
+import { Autocomplete, Box, Button, Stack, TextField } from "@mui/material";
 import React from "react";
 import { Controller, type Control } from "react-hook-form";
 import type { AlbumDto } from "../albumsTypes";
+import type { ArtistaOption } from "../albumsSlice";
 
 type Props = {
   control: Control<AlbumDto>;
@@ -10,9 +11,12 @@ type Props = {
   isView?: boolean;
   hideActions?: boolean;
   onCancel?: () => void;
+
+  artistOptions: ArtistaOption[];
+
 };
 
-export function AlbumForm({ control, onSubmit, isLoading, isView, hideActions, onCancel }: Props) {
+export function AlbumForm({ control, onSubmit, isLoading, isView, hideActions, onCancel, artistOptions }: Props) {
 
   return (
     <Box component="form" onSubmit={onSubmit}>
@@ -53,6 +57,23 @@ export function AlbumForm({ control, onSubmit, isLoading, isView, hideActions, o
             />
           )}
         />
+        <Controller
+          name="artistasIds"
+          control={control}
+          render={({ field }) => (
+            <Autocomplete
+              multiple
+              options={artistOptions}
+              getOptionLabel={(o) => `${o.id} - ${o.nome}`}
+              value={artistOptions.filter((o) => (field.value ?? []).includes(o.id))}
+              onChange={(_, selected) => field.onChange(selected.map((s) => s.id))}
+              disabled={!!isView}
+              renderInput={(params) => (
+                <TextField {...params} label="Artistas" placeholder="Selecione..." fullWidth />
+              )}
+            />
+          )}
+        />
 
         {!hideActions ? (
           <Stack direction="row" spacing={1} justifyContent="flex-end">
@@ -62,13 +83,13 @@ export function AlbumForm({ control, onSubmit, isLoading, isView, hideActions, o
               </Button>
             ) : null}
             {!isView ? (
-            <Button type="submit" variant="contained" disabled={isLoading}>
-              {isLoading ? "Salvando..." : "Salvar"}
-            </Button>
+              <Button type="submit" variant="contained" disabled={isLoading}>
+                {isLoading ? "Salvando..." : "Salvar"}
+              </Button>
             ) : null}
           </Stack>
         ) : null}
-        
+
       </Stack>
     </Box>
   );
