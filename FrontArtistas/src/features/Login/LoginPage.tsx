@@ -57,7 +57,7 @@ export default function LoginPage() {
             color="text.secondary"
             sx={{ mt: 2, textAlign: "center" }}
           >
-            CRUD Artistas/Álbuns
+            Sistema de Discografia
           </Typography>
         </Box>
       </Container>

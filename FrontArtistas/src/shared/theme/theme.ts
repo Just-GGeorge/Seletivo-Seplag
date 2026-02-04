@@ -35,13 +35,45 @@ export const theme1 = createTheme({
     MuiOutlinedInput: {
       styleOverrides: { root: { borderRadius: 14 } },
     },
+
     MuiTableCell: {
       styleOverrides: {
-        head: { fontWeight: 800, color: "rgba(255,255,255,0.85)" },
-        body: { color: "rgba(255,255,255,0.78)" },
+        head: {
+          textAlign: "left",
+          fontWeight: 800,
+          fontSize: "1rem",
+          color: "rgba(255,255,255,0.85)",
+        },
+        body: {
+          textAlign: "left",
+          fontSize: "1rem",
+          color: "rgba(255,255,255,0.78)",
+        },
       },
     },
-    MuiDivider: { styleOverrides: { root: { borderColor: "rgba(255,255,255,0.08)" } } },
+
+    MuiTableRow: {
+      styleOverrides: {
+        root: {
+          height: 56,
+        },
+      },
+    },
+
+    MuiTableSortLabel: {
+      styleOverrides: {
+        root: {
+          justifyContent: "center",
+        },
+        icon: {
+          marginLeft: 6,
+        },
+      },
+    },
+
+    MuiDivider: {
+      styleOverrides: { root: { borderColor: "rgba(255,255,255,0.08)" } },
+    },
   },
 });
 

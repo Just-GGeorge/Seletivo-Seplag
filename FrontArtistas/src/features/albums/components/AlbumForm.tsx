@@ -6,12 +6,14 @@ import type { AlbumDto } from "../albumsTypes";
 type Props = {
   control: Control<AlbumDto>;
   onSubmit: React.FormEventHandler<HTMLFormElement>;
-  onGoBack: () => void;
   isLoading: boolean;
   isView?: boolean;
+  hideActions?: boolean;
+  onCancel?: () => void;
 };
 
-export function AlbumForm({ control, onSubmit, onGoBack, isLoading, isView }: Props) {
+export function AlbumForm({ control, onSubmit, isLoading, isView, hideActions, onCancel }: Props) {
+
   return (
     <Box component="form" onSubmit={onSubmit}>
       <Stack spacing={2} sx={{ maxWidth: 520 }}>
@@ -52,17 +54,21 @@ export function AlbumForm({ control, onSubmit, onGoBack, isLoading, isView }: Pr
           )}
         />
 
-        <Stack direction="row" spacing={1} justifyContent="flex-end">
-          <Button variant="outlined" onClick={onGoBack}>
-            Voltar
-          </Button>
-
-          {!isView ? (
+        {!hideActions ? (
+          <Stack direction="row" spacing={1} justifyContent="flex-end">
+            {onCancel ? (
+              <Button variant="outlined" disabled={isLoading} onClick={onCancel}>
+                Cancelar
+              </Button>
+            ) : null}
+            {!isView ? (
             <Button type="submit" variant="contained" disabled={isLoading}>
               {isLoading ? "Salvando..." : "Salvar"}
             </Button>
-          ) : null}
-        </Stack>
+            ) : null}
+          </Stack>
+        ) : null}
+        
       </Stack>
     </Box>
   );

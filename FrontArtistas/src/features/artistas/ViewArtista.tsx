@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Alert, Box, Button, Divider, Paper, Typography } from "@mui/material";
+import { Alert, Box, Button, Divider, Paper, Stack, Typography } from "@mui/material";
 import { useForm } from "react-hook-form";
 import { useNavigate, useParams } from "react-router-dom";
 
@@ -37,11 +37,13 @@ export default function ViewArtista() {
 
   return (
     <Box>
-      <Typography variant="h5" sx={{ mb: 2 }}>
-        Detalhes do artista
-      </Typography>
-
       <Paper sx={{ p: 2, mb: 3 }}>
+        <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
+          <Typography variant="h5" sx={{ mb: 2 }}>
+            Detalhes do artista
+          </Typography>
+        </Stack>
+
         {error ? (
           <Alert severity="error" sx={{ mb: 2 }}>
             {error}

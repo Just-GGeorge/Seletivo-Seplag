@@ -89,8 +89,11 @@ export function ArtistasTable({
               </TableSortLabel>
             </TableCell>
 
-            <TableCell align="right">Ações</TableCell>
+            <TableCell align="right" sx={{ textAlign: "right", pr: 1 }}>
+              Ações
+            </TableCell>
           </TableRow>
+
         </TableHead>
 
         <TableBody>
@@ -99,7 +102,7 @@ export function ArtistasTable({
               <TableCell>{r.id}</TableCell>
               <TableCell>{r.nome}</TableCell>
               <TableCell>{r.genero}</TableCell>
-              <TableCell align="right">
+              <TableCell align="right" sx={{ textAlign: "right", pr: 1, whiteSpace: "nowrap" }}>
                 <Tooltip title="Visualizar">
                   <IconButton onClick={() => onView(r)} size="small">
                     <VisibilityIcon fontSize="small" />

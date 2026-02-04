@@ -8,7 +8,6 @@ import ViewArtista from "../../features/artistas/ViewArtista";
 import EditArtista from "../../features/artistas/EditArtista";
 import CreateAlbum from "../../features/albums/CreateAlbum";
 import EditAlbum from "../../features/albums/EditAlbum.tsx";
-import ViewAlbum from "../../features/albums/ViewAlbum";
 
 function Home() {
   return <div>Bem-vindo! Selecione “Artistas” no menu.</div>;
@@ -37,7 +36,6 @@ export function AppRouter() {
 
           <Route path="albums/new" element={<CreateAlbum />} />
           <Route path="albums/edit/:id" element={<EditAlbum />} />
-          <Route path="albums/view/:id" element={<ViewAlbum />} />
 
         </Route>
 

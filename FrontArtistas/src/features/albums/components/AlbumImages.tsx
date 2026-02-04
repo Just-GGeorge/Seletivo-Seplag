@@ -17,6 +17,7 @@ import {
 } from "@mui/material";
 import type { ImagemAlbumComUrlDto } from "../albumsTypes";
 import { definirCapa, deletarImagem, listarImagensComUrls, uploadImagens } from "../albumsSlice";
+import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate';
 
 import StarIcon from "@mui/icons-material/Star";
 import StarBorderIcon from "@mui/icons-material/StarBorder";
@@ -115,8 +116,8 @@ export function AlbumImages({ albumId, readOnly }: Props) {
 
   return (
     <Box sx={{ mt: 3 }}>
-      <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
-        <Typography variant="h6">Imagens</Typography>
+      <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 2 }}>
+        <Typography variant="h6">Imagens do Álbum</Typography>
 
         {!readOnly ? (
           <>
@@ -132,6 +133,8 @@ export function AlbumImages({ albumId, readOnly }: Props) {
               variant="contained"
               disabled={loading}
               onClick={() => fileRef.current?.click()}
+              sx={{ borderRadius: "50px" }}
+              startIcon={<AddPhotoAlternateIcon />}
             >
               Adicionar
             </Button>

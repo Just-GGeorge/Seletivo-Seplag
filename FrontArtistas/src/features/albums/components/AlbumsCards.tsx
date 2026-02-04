@@ -99,7 +99,11 @@ export function AlbumsCards({ rows, loading, imagesByAlbumId, onView, onEdit, on
                     const current = imgs[effectiveIdx];
 
                     return (
-                        <Card key={id} sx={{ overflow: "hidden" }}>
+                        <Card key={id}
+                            onClick={() => onEdit?.(album)}
+                            sx={{
+                                overflow: "hidden", cursor: onEdit ? "pointer" : "default"
+                            }}>
                             <Box sx={{ position: "relative", height: 200, bgcolor: "action.hover" }}>
                                 {current?.url ? (
                                     <Box sx={{ position: "relative", height: 200, bgcolor: "action.hover" }}>
@@ -122,7 +126,10 @@ export function AlbumsCards({ rows, loading, imagesByAlbumId, onView, onEdit, on
                                 <Box sx={{ position: "absolute", top: 8, right: 8 }}>
                                     <IconButton
                                         size="small"
-                                        onClick={(e) => onOpenMenu(e, id)}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            onOpenMenu(e, id);
+                                        }}
                                         sx={{ bgcolor: "background.paper" }}
                                     >
                                         <SettingsIcon fontSize="small" />
@@ -134,7 +141,10 @@ export function AlbumsCards({ rows, loading, imagesByAlbumId, onView, onEdit, on
                                         <Box sx={{ position: "absolute", top: "50%", left: 8, transform: "translateY(-50%)" }}>
                                             <IconButton
                                                 size="small"
-                                                onClick={() => setPrev(id, imgs.length)}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setPrev(id, imgs.length);
+                                                }}
                                                 sx={{ bgcolor: "background.paper" }}
                                             >
                                                 <ChevronLeftIcon fontSize="small" />
@@ -144,7 +154,10 @@ export function AlbumsCards({ rows, loading, imagesByAlbumId, onView, onEdit, on
                                         <Box sx={{ position: "absolute", top: "50%", right: 8, transform: "translateY(-50%)" }}>
                                             <IconButton
                                                 size="small"
-                                                onClick={() => setNext(id, imgs.length)}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setNext(id, imgs.length)
+                                                }}
                                                 sx={{ bgcolor: "background.paper" }}
                                             >
                                                 <ChevronRightIcon fontSize="small" />
@@ -186,14 +199,14 @@ export function AlbumsCards({ rows, loading, imagesByAlbumId, onView, onEdit, on
             </Box>
 
             <Menu anchorEl={menuAnchor} open={openMenu} onClose={onCloseMenu}>
-                <MenuItem
+                {/* <MenuItem
                     onClick={() => {
                         if (selectedAlbum) onView(selectedAlbum);
                         onCloseMenu();
                     }}
                 >
                     Visualizar
-                </MenuItem>
+                </MenuItem> */}
 
                 {onEdit ? (
                     <MenuItem
