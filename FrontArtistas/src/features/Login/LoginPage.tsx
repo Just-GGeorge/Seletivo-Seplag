@@ -50,6 +50,7 @@ export default function LoginPage() {
             onLoginChange={setLogin}
             onSenhaChange={setSenha}
             onSubmit={onSubmit}
+            onGoRegister={() => navigate("/registrar")}
           />
 
           <Typography

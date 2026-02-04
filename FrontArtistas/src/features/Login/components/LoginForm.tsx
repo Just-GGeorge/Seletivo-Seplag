@@ -7,6 +7,7 @@ import {
   Paper,
   TextField,
   Typography,
+  Stack,
 } from "@mui/material";
 
 type Props = {
@@ -17,6 +18,7 @@ type Props = {
   onLoginChange: (value: string) => void;
   onSenhaChange: (value: string) => void;
   onSubmit: (e: React.FormEvent) => void;
+  onGoRegister: () => void;
 };
 
 export default function LoginForm({
@@ -27,6 +29,7 @@ export default function LoginForm({
   onLoginChange,
   onSenhaChange,
   onSubmit,
+  onGoRegister,
 }: Props) {
   return (
     <Paper elevation={2} sx={{ p: 4, width: "100%", maxWidth: 420 }}>
@@ -84,6 +87,18 @@ export default function LoginForm({
           >
             {loading ? "Entrando..." : "Entrar"}
           </Button>
+
+          <Stack sx={{ mt: 1 }}>
+            <Button
+              type="button"
+              fullWidth
+              variant="text"
+              disabled={loading}
+              onClick={onGoRegister}
+            >
+              Criar conta
+            </Button>
+          </Stack>
         </Box>
       </Box>
     </Paper>
