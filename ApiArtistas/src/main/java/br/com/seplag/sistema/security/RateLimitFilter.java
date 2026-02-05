@@ -19,10 +19,10 @@ public class RateLimitFilter extends OncePerRequestFilter {
 
     private final Map<String, io.github.bucket4j.Bucket> buckets = new ConcurrentHashMap<>();
 
-    // 10 req/min por usuário
+    // 
     private final io.github.bucket4j.Bandwidth limit = io.github.bucket4j.Bandwidth.classic(
-            10,
-            io.github.bucket4j.Refill.intervally(10, Duration.ofMinutes(1))
+            20,
+            io.github.bucket4j.Refill.intervally(20, Duration.ofMinutes(1))
     );
 
     @Override

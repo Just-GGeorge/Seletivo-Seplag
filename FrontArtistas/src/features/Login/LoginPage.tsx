@@ -11,8 +11,8 @@ export default function LoginPage() {
   const initial = useMemo(() => authFacade.getSnapshot(), []);
   const auth = useObservableState(authFacade.state$, initial);
 
-  const [login, setLogin] = useState("admin@local.com");
-  const [senha, setSenha] = useState("Admin@123");
+  const [login, setLogin] = useState("");
+  const [senha, setSenha] = useState("");
 
   if (auth.isAuthenticated) return <Navigate to="/" replace />;
 

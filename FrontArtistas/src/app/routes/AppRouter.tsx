@@ -12,7 +12,7 @@ function RouteLoader() {
   );
 }
 
-const LoginPage = lazy(() => import("../../features/Login/LoginPage"));
+const LoginPage = lazy(() => import("../../features/login/LoginPage.tsx"));
 const RegisterPage = lazy(() => import("../../features/register/RegisterPage"));
 
 const ListArtistas = lazy(() => import("../../features/artistas/ListArtistas"));
