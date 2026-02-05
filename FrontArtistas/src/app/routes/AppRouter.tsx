@@ -3,6 +3,7 @@ import { Suspense, lazy } from "react";
 import { ProtectedRoute } from "../layout/ProtectedRoute";
 import { AppShell } from "../layout/AppShell";
 import { Box, CircularProgress } from "@mui/material";
+import { NotificationsHost } from "../../core/notifications/NotificationsHost.tsx";
 
 function RouteLoader() {
   return (
@@ -27,6 +28,8 @@ const EditAlbum = lazy(() => import("../../features/albums/EditAlbum.tsx"));
 export function AppRouter() {
   return (
     <BrowserRouter>
+      <NotificationsHost />
+
       <Suspense fallback={<RouteLoader />}>
         <Routes>
           <Route path="/login" element={<LoginPage />} />

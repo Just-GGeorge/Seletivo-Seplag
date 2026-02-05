@@ -1,6 +1,7 @@
 import { BehaviorSubject } from "rxjs";
 import { tokenStore, type Tokens } from "./tokenStore";
 import * as authApi from "./authApi";
+import { notificationsFacade } from "../notifications/NotificationsFacade";
 
 export type AuthState = {
   isAuthenticated: boolean;
@@ -30,6 +31,8 @@ export class AuthFacade {
     try {
       const tokens: Tokens = await authApi.login({ login, senha  });
       tokenStore.setTokens(tokens);
+      notificationsFacade.connect();
+
       this.setState({ isAuthenticated: true, loading: false });
     } catch (e: any) {
       this.setState({ loading: false, error: e?.message ?? "Falha no login" });
@@ -39,6 +42,8 @@ export class AuthFacade {
 
   logout() {
     tokenStore.clear();
+    notificationsFacade.disconnect();
+notificationsFacade.clear();
     this.setState({ isAuthenticated: false });
   }
 }
