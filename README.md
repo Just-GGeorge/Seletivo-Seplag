@@ -140,7 +140,7 @@ CORS_ALLOWED_ORIGINS=http://localhost:5173,http://localhost:3000,http://localhos
 
 (Alterar o limite de requições, necessario a reinicialização do docker) Padrão está 30 para permitir navegação inicial própria
 # ===== RATE LIMIT (Bucket4j) =====
-RATE_LIMIT_CAPACITY=20
+RATE_LIMIT_CAPACITY=30
 RATE_LIMIT_MINUTES=1
 ```
 
