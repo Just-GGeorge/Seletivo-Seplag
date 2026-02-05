@@ -33,7 +33,16 @@ export const theme1 = createTheme({
       },
     },
     MuiOutlinedInput: {
-      styleOverrides: { root: { borderRadius: 14 } },
+      styleOverrides: {
+        root: {
+          borderRadius: 14,
+          "& input[type='date']::-webkit-calendar-picker-indicator": {
+            filter: "invert(1)",
+            opacity: 0.9,
+            cursor: "pointer",
+          },
+        },
+      },
     },
 
     MuiTableCell: {
@@ -74,6 +83,7 @@ export const theme1 = createTheme({
     MuiDivider: {
       styleOverrides: { root: { borderColor: "rgba(255,255,255,0.08)" } },
     },
+
   },
 });
 

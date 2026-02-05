@@ -1,6 +1,8 @@
 package br.com.seplag.sistema.security;
 
 
+import jakarta.annotation.PostConstruct;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -19,11 +21,25 @@ public class RateLimitFilter extends OncePerRequestFilter {
 
     private final Map<String, io.github.bucket4j.Bucket> buckets = new ConcurrentHashMap<>();
 
-    // 
-    private final io.github.bucket4j.Bandwidth limit = io.github.bucket4j.Bandwidth.classic(
-            40,
-            io.github.bucket4j.Refill.intervally(40, Duration.ofMinutes(1))
-    );
+    @Value("${app.ratelimit.capacity:40}")
+    private long capacity;
+
+    @Value("${app.ratelimit.minutes:1}")
+    private long minutes;
+
+    private io.github.bucket4j.Bandwidth limit; // <-- não final
+
+    @PostConstruct
+    void init() {
+        // garante que não vem 0/negativo do env
+        if (capacity <= 0) capacity = 40;
+        if (minutes <= 0) minutes = 1;
+
+        this.limit = io.github.bucket4j.Bandwidth.classic(
+                capacity,
+                io.github.bucket4j.Refill.intervally(capacity, Duration.ofMinutes(minutes))
+        );
+    }
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
@@ -46,10 +62,12 @@ public class RateLimitFilter extends OncePerRequestFilter {
             return;
         }
 
-        // seu JwtAuthFilter usa subject (id) como principal
         String userKey = String.valueOf(auth.getPrincipal());
 
-        io.github.bucket4j.Bucket bucket = buckets.computeIfAbsent(userKey, k -> io.github.bucket4j.Bucket.builder().addLimit(limit).build());
+        io.github.bucket4j.Bucket bucket = buckets.computeIfAbsent(
+                userKey,
+                k -> io.github.bucket4j.Bucket.builder().addLimit(limit).build()
+        );
 
         io.github.bucket4j.ConsumptionProbe probe = bucket.tryConsumeAndReturnRemaining(1);
         if (probe.isConsumed()) {
@@ -67,7 +85,7 @@ public class RateLimitFilter extends OncePerRequestFilter {
             {
               "status": 429,
               "erro": "Too Many Requests",
-              "mensagem": "Limite de 10 requisições por minuto excedido para este usuário."
+              "mensagem": "Limite de requisições por minuto excedido para este usuário."
             }
         """);
     }

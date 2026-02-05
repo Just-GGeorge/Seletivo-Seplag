@@ -7,88 +7,103 @@ Candidato: Guilherme George Oliveira da Silva
 
 email: guilhermegeorge06@gmail.com
 
-## Projeto Full-Stack [Discografia – CRUD de Artistas & Álbuns (API + Front)]
+# Seletivo SEPLAG — CRUD Artistas & Álbuns (Full Stack)
 
+Aplicação Full Stack para **cadastro e gestão de Artistas e seus Álbuns**, com **upload/armazenamento de imagens em serviço externo (MinIO/S3)**, **autenticação JWT com refresh token**, **paginação/filtros** e **migrations com Flyway**.
 
-Aplicação full-stack para cadastro e consulta de **Artistas** e **Álbuns**, com persistência em **PostgreSQL**, armazenamento de imagens em **MinIO** e autenticação **JWT** (access + refresh).  
-Back-end em **Spring Boot (Java 17)** com **Flyway** e health checks via **Actuator**.  
-Front-end em **React + TypeScript**.
+> Projeto organizado em **backend (Spring Boot)** + **frontend (React + TypeScript)**.
 
 ---
 
-## Stack
+## ✨ Funcionalidades
 
-**Back-end**
-- Java 17 + Spring Boot 3.x
-- Spring Security + JWT (access 5 min, refresh 7 dias)
-- Spring Data JPA
-- Flyway (migrations)
-- PostgreSQL 15
-- MinIO (S3 compatível) para imagens
-- Actuator (liveness/readiness)
+### Backend
+- CRUD de **Artistas**
+- CRUD de **Álbuns**
+- Relacionamento **N:N (muitos-para-muitos)** entre Artistas e Álbuns
+- Upload/remoção/listagem de **imagens de álbum** via **MinIO (S3-compatible)**
+- **URLs pré-assinadas** (presigned URLs) para acesso às imagens
+- **JWT (access token)** com expiração curta + **Refresh Token**
+- **Flyway** para versionamento do banco
+- **Health checks** (liveness/readiness) via Actuator
+- **Rate limit por usuário** (Bucket4j) configurável por variáveis de ambiente
 
-**Front-end**
+### Frontend
+- Listagem de artistas com filtros/paginação/ordenação
+- Tela de detalhes do artista com listagem de álbuns
+- Cards de álbum (ex.: `AlbumsCards`) com carrossel de imagens e menu de ações
+- Integração com autenticação (JWT) e chamadas à API
+
+---
+
+## 🧱 Stack
+
+**Backend**
+- Java 17
+- Spring Boot 3.2.x
+- Spring Web / Spring Data JPA
+- PostgreSQL
+- Flyway
+- JWT + Refresh Token
+- MinIO (S3)
+
+**Frontend**
 - React + TypeScript
 - Vite
+- MUI (tema dark)
+- Integração via REST
 
 ---
 
-## Serviços (Docker Compose)
+## 📁 Estrutura (exemplo)
 
-O `docker-compose.yml` sobe:
-
-- **postgres**: PostgreSQL
-- **minio**: storage compatível com S3
-- **minio-init**: cria o bucket `fotos` (uma vez)
-- **api**: aplicação Spring Boot
-- **front**: aplicação web (servida na porta 80)
-
-### Portas e URLs
-
-- **Front:** `http://localhost:80/` 
-- **API:** `http://localhost:8080/`
-- **Swagger:** `http://localhost:8080/swagger-ui/index.html`
-- **Actuator:** `http://localhost:8080/actuator/health`
-- **MinIO API:** `http://localhost:9000/`
-- **MinIO Console:** `http://localhost:9090/`
-- **PostgreSQL:** `localhost:5432`
-
----
-
-## Como rodar
-
-### Pré-requisitos
-- Docker
-- Docker Compose (plugin do Docker)
-
-### Subir o ambiente (build + run)
-Na raiz do repositório:
-
-```bash
-docker compose up --build
 ```
-
-A API possui healthcheck e o front depende dela ficar saudável antes de iniciar.
-
-### Parar containers
-```bash
-docker compose down
-```
-
-### Resetar dados (apaga volumes do Postgres e MinIO)
-```bash
-docker compose down -v
+/
+├─ ApiArtistas/           # API Spring Boot
+├─ FrontArtistas/         # React + TS + Vite
+├─ docker-compose.yml     # Postgres + MinIO + API + Front
+├─ .env                   # variáveis do backend (usado no compose)
+└─ README.md
 ```
 
 ---
 
-## Variáveis de ambiente
+## ✅ Pré-requisitos
 
-A API lê o arquivo `.env` (usado no serviço `api` do compose).
+- **Docker** e **Docker Compose**
+- (Opcional) **Java 17** e **Maven** para rodar a API fora do Docker
 
-### `.env` (exemplo do projeto)
+---
 
-> **Importante:** evite commitar credenciais reais. Recomenda-se manter um `.env.example` no repositório com valores dummy.
+
+## 🚀 Como rodar com Docker (recomendado)
+
+Na raiz do projeto:
+
+```bash
+git clone https://github.com/Just-GGeorge/Seletivo-Seplag
+
+# 2. Suba os containers com Docker Compose
+docker-compose up --build
+
+# 2. Parar os containers com Docker Compose
+docker-compose stop
+```
+
+### Acessar MinIO
+- Console: `http://localhost:9090`
+- API S3 (host/local): `http://localhost:9000`
+- API S3 (rede Docker/interno): `http://minio:9000`
+
+> A API retorna URLs públicas usando `MINIO_PUBLIC_URL` (no exemplo abaixo: `http://host.docker.internal:9000`).
+
+---
+
+## ⚙️ Variáveis de ambiente
+
+O backend lê configurações via `application.properties` e permite sobrescrever por variáveis de ambiente (ex.: via arquivo `.env` usado no `docker-compose`).
+
+Exemplo de `.env` (backend):
 
 ```env
 # ===== SERVER =====
@@ -107,7 +122,6 @@ SPRING_FLYWAY_BASELINE_ON_MIGRATE=true
 # ===== MINIO =====
 MINIO_INTERNAL_URL=http://minio:9000
 MINIO_PUBLIC_URL=http://host.docker.internal:9000
-
 MINIO_ACCESS_KEY=admin
 MINIO_SECRET_KEY=admin123
 MINIO_BUCKET=fotos
@@ -120,70 +134,91 @@ JWT_ACCESS_MINUTES=5
 JWT_REFRESH_DAYS=7
 JWT_LOGIN_FIELD=email
 
-# ==== Cors =====
+# ===== CORS =====
 CORS_ALLOWED_ORIGINS=http://localhost:5173,http://localhost:3000,http://localhost
 
-# (Front - referência local)
-VITE_API_BASE_URL=http://localhost:8080/api/v1
+
+(Alterar o limite de requições, necessario a reinicialização do docker) Padrão está 30 para permitir navegação inicial própria
+# ===== RATE LIMIT (Bucket4j) =====
+RATE_LIMIT_CAPACITY=20
+RATE_LIMIT_MINUTES=1
 ```
 
----
-
-## MinIO (imagens)
-
-O serviço `minio-init` cria automaticamente o bucket configurado em `MINIO_BUCKET` (padrão: `fotos`) quando o MinIO fica healthy.
-
-A URL pública `MINIO_PUBLIC_URL` é usada para montar links acessíveis pelo host (ex.: `http://host.docker.internal:9000`).
 
 ---
 
-## Health checks (Actuator)
+## ▶️ Rodando o Backend (sem Docker)
 
-A API expõe endpoints de saúde:
+Dentro da pasta `ApiArtistas/`:
 
-- `GET /actuator/health`
-- `GET /actuator/health/liveness`
-- `GET /actuator/health/readiness`
+```bash
+./mvnw spring-boot:run
+```
 
-O Docker Compose valida readiness com:
+No Windows:
 
-- `GET /actuator/health/readiness` deve retornar `"status":"UP"`
+```bat
+mvnw.cmd spring-boot:run
+```
 
----
-
-## Swagger / OpenAPI
-
-A documentação interativa está disponível em:
-
-- `http://localhost:8080/swagger-ui/index.html`
-
-Use o Swagger para:
-- ver endpoints disponíveis
-- testar requests
-- copiar exemplos de payload/response
+API: `http://localhost:8080`
 
 ---
 
-## Autenticação (JWT)
+## ▶️ Rodando o Frontend (local)
 
-O projeto usa JWT com:
-- **Access token:** expira em **5 minutos**
-- **Refresh token:** expira em **7 dias**
-- O campo de login é configurável via `JWT_LOGIN_FIELD` (padrão no projeto: `email`)
+Dentro da pasta `FrontArtistas/`:
 
-> Os endpoints exatos de autenticação estão no Swagger em `/api/v1/auth/**`.
+```bash
+npm install
+npm run dev
+```
 
-### Como autenticar no Swagger
-1. Acesse o Swagger.
-2. Faça login no endpoint de auth e copie o access token retornado.
-3. Clique em **Authorize** e cole como:
-   - `Bearer SEU_ACCESS_TOKEN`
+Front: `http://localhost:5173`
+
+> Se usar `.env` do Vite, exemplo:
+```env
+VITE_API_URL=http://localhost:8080
+```
+
+
+
+## 🧪 Testes
+
+Backend:
+```bash
+./mvnw test
+```
+
+Frontend:
+```bash
+npm test
+```
+
+
 
 ---
 
-## Estrutura do repositório 
+## 📚 Swagger e Actuator
 
-- `ApiArtistas/` – Back-end Spring Boot
-- `FrontArtistas/` – Front-end React/TS
+- Swagger UI: `http://localhost:8080/swagger-ui.html` 
+- OpenAPI JSON: `http://localhost:8080/v3/api-docs`
+- Actuator: `http://localhost:8080/actuator/health`
 
 ---
+
+
+## 📡 Requisitos extras (roadmap)
+
+- WebSocket: notificar no front quando um novo álbum for cadastrado
+- Rate limit: configurável por env (**RATE_LIMIT_CAPACITY** / **RATE_LIMIT_MINUTES**) — padrão 10 req/min por usuário
+- No front: padrão **Facade** + estado com **BehaviorSubject**
+- Importação e sincronização de regionais a partir do endpoint:
+  `https://integrador-argus-api.geia.vip/v1/regionais`
+  - persistir em tabela `regional (id, nome, ativo)`
+  - sincronizar:
+    - novo no endpoint → inserir
+    - não existe mais no endpoint → inativar
+    - alterou atributo → inativar
+
+
