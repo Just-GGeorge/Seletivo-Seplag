@@ -5,6 +5,7 @@ import br.com.seplag.sistema.erp.model.dto.ArtistaListDto;
 import br.com.seplag.sistema.erp.repository.ArtistaRepository;
 import br.com.seplag.sistema.erp.service.ArtistaService;
 import br.com.seplag.sistema.exception.RecursoNaoEncontradoException;
+import br.com.seplag.sistema.websocket.NotificationPublisher;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
@@ -22,6 +23,9 @@ class ArtistaServiceTest {
     @Mock ArtistaRepository artistaRepository;
     @InjectMocks
     ArtistaService service;
+    @Mock
+    NotificationPublisher notifications;
+
 
     @Test
     void criar_deveSalvarEDevolverDto() {

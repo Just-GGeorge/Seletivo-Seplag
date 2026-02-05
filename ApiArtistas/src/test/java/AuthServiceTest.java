@@ -6,6 +6,7 @@ import br.com.seplag.sistema.erp.service.AuthService;
 import br.com.seplag.sistema.exception.RecursoNaoEncontradoException;
 import br.com.seplag.sistema.security.JwtService;
 import br.com.seplag.sistema.security.RefreshTokenService;
+import br.com.seplag.sistema.websocket.NotificationPublisher;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
@@ -29,6 +30,8 @@ class AuthServiceTest {
 
     @InjectMocks
     AuthService service;
+    @Mock
+    NotificationPublisher notifications;
 
     @Test
     void registrar_quandoEmailJaExiste_deveLancar() {

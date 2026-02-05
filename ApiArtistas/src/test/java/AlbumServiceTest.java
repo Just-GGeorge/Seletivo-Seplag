@@ -7,6 +7,7 @@ import br.com.seplag.sistema.erp.repository.ArtistaRepository;
 import br.com.seplag.sistema.erp.service.AlbumService;
 import br.com.seplag.sistema.erp.service.ImagemAlbumService;
 import br.com.seplag.sistema.exception.RecursoNaoEncontradoException;
+import br.com.seplag.sistema.websocket.NotificationPublisher;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
@@ -30,6 +31,9 @@ class AlbumServiceTest {
 
     @InjectMocks
     AlbumService service;
+
+    @Mock
+    NotificationPublisher notifications;
 
     @Test
     void criar_deveSalvarAlbumComArtistas() {

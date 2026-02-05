@@ -7,6 +7,7 @@ import br.com.seplag.sistema.erp.service.ImagemAlbumService;
 import br.com.seplag.sistema.exception.RecursoNaoEncontradoException;
 import br.com.seplag.sistema.storage.ArquivoInvalidoException;
 import br.com.seplag.sistema.storage.MinioStorageService;
+import br.com.seplag.sistema.websocket.NotificationPublisher;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
@@ -25,6 +26,8 @@ class ImagemAlbumServiceTest {
     @Mock AlbumRepository albumRepository;
     @Mock ImagemAlbumRepository imagemAlbumRepository;
     @Mock MinioStorageService storage;
+    @Mock
+    NotificationPublisher notifications;
 
     @InjectMocks
     ImagemAlbumService service;
@@ -120,6 +123,7 @@ class ImagemAlbumServiceTest {
         var img = new ImagemAlbum();
         img.setId(10L);
         img.setEhCapa(false);
+        img.setChaveObjeto("key-10");
 
         when(imagemAlbumRepository.findByIdAndAlbumId(10L, 1L)).thenReturn(Optional.of(img));
         when(imagemAlbumRepository.save(any(ImagemAlbum.class))).thenAnswer(inv -> inv.getArgument(0));
