@@ -21,8 +21,8 @@ public class RateLimitFilter extends OncePerRequestFilter {
 
     // 
     private final io.github.bucket4j.Bandwidth limit = io.github.bucket4j.Bandwidth.classic(
-            20,
-            io.github.bucket4j.Refill.intervally(20, Duration.ofMinutes(1))
+            40,
+            io.github.bucket4j.Refill.intervally(40, Duration.ofMinutes(1))
     );
 
     @Override

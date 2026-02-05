@@ -37,9 +37,13 @@ public class AlbumResource {
     @GetMapping
     public ResponseEntity<Page<AlbumDto>> listar(
             @RequestParam(required = false) List<Long> artistaIds,
+            @RequestParam(required = false) Long artistaId,
             @RequestParam(defaultValue = "") String titulo,
             @PageableDefault(size = 10, sort = "id", direction = Sort.Direction.ASC) Pageable pageable
     ) {
+        if ((artistaIds == null || artistaIds.isEmpty()) && artistaId != null) {
+            artistaIds = List.of(artistaId);
+        }
         return ResponseEntity.ok(albumService.listar(artistaIds, titulo, pageable));
     }
 

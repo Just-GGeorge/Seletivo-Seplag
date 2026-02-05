@@ -15,12 +15,17 @@ import java.util.List;
 public interface AlbumRepository extends JpaRepository<Album, Long> {
 
     @Query("""
-        SELECT DISTINCT al
-        FROM Album al
-        LEFT JOIN al.artistas ar
-        WHERE (:titulo IS NULL OR :titulo = '' OR LOWER(al.titulo) LIKE CONCAT('%', LOWER(:titulo), '%'))
-        AND (:artistaIds IS NULL OR ar.id IN :artistaIds)
-    """)
+    SELECT al
+    FROM Album al
+    WHERE (:titulo IS NULL OR :titulo = '' OR LOWER(al.titulo) LIKE CONCAT('%', LOWER(:titulo), '%'))
+      AND (
+        :artistaIds IS NULL OR EXISTS (
+          SELECT 1
+          FROM al.artistas ar
+          WHERE ar.id IN :artistaIds
+        )
+      )
+""")
     Page<Album> buscarComFiltro(
             @Param("artistaIds") List<Long> artistaIds,
             @Param("titulo") String titulo,
