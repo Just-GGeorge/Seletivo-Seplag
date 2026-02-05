@@ -90,12 +90,17 @@ docker-compose up --build
 docker-compose stop
 ```
 
-### Acessar MinIO
+---
+
+## 📚 Links Relevantes
+
+- FrontEnd: `http://localhost:80` 
+- Swagger UI: `http://localhost:8080/swagger-ui.html` 
+- OpenAPI JSON: `http://localhost:8080/v3/api-docs`
+- Actuator: `http://localhost:8080/actuator/health`
 - Console: `http://localhost:9090`
 - API S3 (host/local): `http://localhost:9000`
 - API S3 (rede Docker/interno): `http://minio:9000`
-
-> A API retorna URLs públicas usando `MINIO_PUBLIC_URL` (no exemplo abaixo: `http://host.docker.internal:9000`).
 
 ---
 
@@ -199,13 +204,7 @@ npm test
 
 ---
 
-## 📚 Swagger e Actuator
 
-- Swagger UI: `http://localhost:8080/swagger-ui.html` 
-- OpenAPI JSON: `http://localhost:8080/v3/api-docs`
-- Actuator: `http://localhost:8080/actuator/health`
-
----
 
 
 ## 📡 Requisitos extras (roadmap)
