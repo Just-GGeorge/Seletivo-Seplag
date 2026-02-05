@@ -16,10 +16,12 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.net.URI;
 import java.util.List;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 
 @RestController
 @RequestMapping("/api/v1/albuns")
+@Tag(name = "Álbuns", description = "Operações de cadastro, consulta e upload de imagens de álbuns")
 public class AlbumResource {
 
 	private final AlbumService albumService;

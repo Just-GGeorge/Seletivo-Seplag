@@ -2,6 +2,7 @@ package br.com.seplag.sistema.erp.resource;
 
 import br.com.seplag.sistema.erp.model.Regional;
 import br.com.seplag.sistema.erp.service.RegionalService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -9,6 +10,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/regionais")
+@Tag(name = "Regional", description = "Fazer consultas na Api externa, sincronizar e listar as Ativas")
 public class RegionalResource {
 
     private final RegionalService regionalService;

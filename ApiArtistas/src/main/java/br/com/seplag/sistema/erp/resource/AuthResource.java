@@ -6,12 +6,15 @@ import br.com.seplag.sistema.erp.model.dto.auth.LogoutRequest;
 import br.com.seplag.sistema.erp.model.dto.auth.RefreshRequest;
 import br.com.seplag.sistema.erp.model.dto.auth.RegistrarRequest;
 import br.com.seplag.sistema.erp.service.AuthService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/auth")
+@Tag(name = "Autenticação", description = "Login, cadastro, refreshtoken, logout")
 public class AuthResource {
 
     private final AuthService authService;
@@ -25,6 +28,7 @@ public class AuthResource {
         return ResponseEntity.status(201).body(authService.registrar(req));
     }
 
+    @SecurityRequirement(name = "")
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@RequestBody @Valid LoginRequest req) {
         return ResponseEntity.ok(authService.login(req));

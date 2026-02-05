@@ -1,6 +1,7 @@
 package br.com.seplag.sistema.erp.resource;
 
 import br.com.seplag.sistema.erp.model.dto.ImagemAlbumComUrlDto;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +16,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/albuns/{albumId}/imagens")
+@Tag(name = "Imagem Album", description = "Operações de cadastro, consulta, edição de imagens")
 public class ImagemAlbumResource {
 
     private final ImagemAlbumService imagemAlbumService;

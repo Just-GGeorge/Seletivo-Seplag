@@ -1,6 +1,7 @@
 package br.com.seplag.sistema.erp.resource;
 
 import br.com.seplag.sistema.erp.model.dto.ArtistaListDto;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
 import org.springframework.data.web.PageableDefault;
@@ -17,6 +18,7 @@ import java.net.URI;
 
 @RestController
 @RequestMapping("/api/v1/artistas")
+@Tag(name = "Artistas", description = "Operações de cadastro, consulta, edição de Artistas")
 public class ArtistaResource {
 
 	private final ArtistaService artistaService;
