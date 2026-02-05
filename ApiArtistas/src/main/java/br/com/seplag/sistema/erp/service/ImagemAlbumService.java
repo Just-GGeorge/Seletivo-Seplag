@@ -1,21 +1,23 @@
 package br.com.seplag.sistema.erp.service;
 
-
+import br.com.seplag.sistema.erp.model.Album;
+import br.com.seplag.sistema.erp.model.ImagemAlbum;
 import br.com.seplag.sistema.erp.model.dto.ImagemAlbumComUrlDto;
+import br.com.seplag.sistema.erp.model.dto.ImagemAlbumDto;
+import br.com.seplag.sistema.erp.model.dto.NotificationDto;
+import br.com.seplag.sistema.erp.repository.AlbumRepository;
+import br.com.seplag.sistema.erp.repository.ImagemAlbumRepository;
+import br.com.seplag.sistema.exception.RecursoNaoEncontradoException;
 import br.com.seplag.sistema.storage.ArquivoInvalidoException;
 import br.com.seplag.sistema.storage.MinioStorageService;
+import br.com.seplag.sistema.websocket.NotificationPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import br.com.seplag.sistema.erp.model.Album;
-import br.com.seplag.sistema.erp.model.ImagemAlbum;
-import br.com.seplag.sistema.erp.model.dto.ImagemAlbumDto;
-import br.com.seplag.sistema.erp.repository.AlbumRepository;
-import br.com.seplag.sistema.erp.repository.ImagemAlbumRepository;
-import br.com.seplag.sistema.exception.RecursoNaoEncontradoException;
-
+import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class ImagemAlbumService {
@@ -23,25 +25,27 @@ public class ImagemAlbumService {
     private static final long MAX_BYTES = 10L * 1024 * 1024;
     private static final int EXPIRACAO_URL_SEGUNDOS = 30 * 60;
 
-
     private final AlbumRepository albumRepository;
     private final ImagemAlbumRepository imagemAlbumRepository;
     private final MinioStorageService storage;
+    private final NotificationPublisher notifications;
 
-
-    public ImagemAlbumService(AlbumRepository albumRepository,
-                              ImagemAlbumRepository imagemAlbumRepository,
-                              MinioStorageService storage) {
+    public ImagemAlbumService(
+            AlbumRepository albumRepository,
+            ImagemAlbumRepository imagemAlbumRepository,
+            MinioStorageService storage,
+            NotificationPublisher notifications
+    ) {
         this.albumRepository = albumRepository;
         this.imagemAlbumRepository = imagemAlbumRepository;
         this.storage = storage;
+        this.notifications = notifications;
     }
 
     @Transactional(readOnly = true)
     public List<ImagemAlbumDto> listarPorAlbum(Long albumId) {
-        // garante 404 se álbum não existir
         if (!albumRepository.existsById(albumId)) {
-            throw new br.com.seplag.sistema.exception.RecursoNaoEncontradoException("Álbum não encontrado: " + albumId);
+            throw new RecursoNaoEncontradoException("Álbum não encontrado: " + albumId);
         }
 
         return imagemAlbumRepository.findByAlbumId(albumId).stream()
@@ -68,6 +72,23 @@ public class ImagemAlbumService {
         img.setEhCapa(Boolean.TRUE.equals(dto.ehCapa()));
 
         ImagemAlbum salvo = imagemAlbumRepository.save(img);
+
+        NotificationDto payload = new NotificationDto(
+                "ALBUM_IMAGE_ADDED",
+                "ALBUM",
+                albumId,
+                album.getTitulo(),
+                "Imagem adicionada ao álbum: " + album.getTitulo(),
+                Instant.now(),
+                Map.of(
+                        "imageId", salvo.getId(),
+                        "contentType", salvo.getTipoConteudo(),
+                        "bytes", salvo.getTamanhoBytes(),
+                        "ehCapa", salvo.isEhCapa()
+                )
+        );
+        notifications.publish(payload);
+
         return new ImagemAlbumDto(
                 salvo.getId(),
                 salvo.getChaveObjeto(),
@@ -130,11 +151,37 @@ public class ImagemAlbumService {
                 ));
             }
 
+            // Notificação (imagem upload)
+            notifications.publish(new NotificationDto(
+                    "ALBUM_IMAGES_UPLOADED",
+                    "ALBUM",
+                    albumId,
+                    album.getTitulo(),
+                    "Imagens enviadas para o álbum: " + album.getTitulo(),
+                    Instant.now(),
+                    Map.of(
+                            "qtd", result.size(),
+                            "temCapa", result.stream().anyMatch(i -> Boolean.TRUE.equals(i.ehCapa()))
+                    )
+            ));
+
             return result;
         } catch (Exception e) {
             for (String key : objectKeysEnviados) {
                 try { storage.delete(key); } catch (Exception ignored) {}
             }
+
+            //  Notificação (upload falhou)
+            notifications.publish(new NotificationDto(
+                    "ALBUM_UPLOAD_FAILED",
+                    "ALBUM",
+                    albumId,
+                    album.getTitulo(),
+                    "Falha ao enviar imagens do álbum: " + album.getTitulo(),
+                    Instant.now(),
+                    Map.of("error", e.getMessage() == null ? "erro" : e.getMessage())
+            ));
+
             throw new RuntimeException("Falha ao enviar imagens para o MinIO", e);
         }
     }
@@ -149,6 +196,20 @@ public class ImagemAlbumService {
         img.setEhCapa(true);
         ImagemAlbum salvo = imagemAlbumRepository.save(img);
 
+        //  Notificação troca de capa
+        notifications.publish(new NotificationDto(
+                "ALBUM_COVER_CHANGED",
+                "ALBUM",
+                albumId,
+                img.getAlbum() != null ? img.getAlbum().getTitulo() : null,
+                "Capa do álbum atualizada",
+                Instant.now(),
+                Map.of(
+                        "imageId", salvo.getId(),
+                        "objectKey", salvo.getChaveObjeto()
+                )
+        ));
+
         return new ImagemAlbumDto(
                 salvo.getId(),
                 salvo.getChaveObjeto(),
@@ -158,14 +219,13 @@ public class ImagemAlbumService {
         );
     }
 
-
     @Transactional(readOnly = true)
     public String gerarUrlAssinada(Long albumId, Long imagemId) {
         ImagemAlbum img = imagemAlbumRepository.findByIdAndAlbumId(imagemId, albumId)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Imagem não encontrada: " + imagemId));
 
         try {
-            return storage.presignedGetUrl(img.getChaveObjeto(), EXPIRACAO_URL_SEGUNDOS );
+            return storage.presignedGetUrl(img.getChaveObjeto(), EXPIRACAO_URL_SEGUNDOS);
         } catch (Exception e) {
             throw new RuntimeException("Falha ao gerar URL assinada", e);
         }
@@ -176,30 +236,32 @@ public class ImagemAlbumService {
         ImagemAlbum img = imagemAlbumRepository.findByIdAndAlbumId(imagemId, albumId)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Imagem não encontrada: " + imagemId));
 
+        String tituloAlbum = img.getAlbum() != null ? img.getAlbum().getTitulo() : null;
+        String chave = img.getChaveObjeto();
+
         // 1) tenta apagar do MinIO primeiro
         try {
-            storage.delete(img.getChaveObjeto());
+            storage.delete(chave);
         } catch (Exception e) {
             throw new RuntimeException("Falha ao remover objeto do MinIO", e);
         }
 
         // 2) apaga do banco
         imagemAlbumRepository.delete(img);
-    }
 
-    private void validarArquivo(MultipartFile arquivo) {
-        if (arquivo == null || arquivo.isEmpty()) {
-            throw new ArquivoInvalidoException("Arquivo é obrigatório");
-        }
-        if (arquivo.getSize() > MAX_BYTES) {
-            throw new ArquivoInvalidoException("Arquivo excede o limite de 10MB");
-        }
-        String ct = arquivo.getContentType();
-        if (ct == null || !(ct.equalsIgnoreCase("image/jpeg")
-                || ct.equalsIgnoreCase("image/png")
-                || ct.equalsIgnoreCase("image/webp"))) {
-            throw new ArquivoInvalidoException("Tipo de arquivo inválido. Use JPEG, PNG ou WEBP");
-        }
+        // Notificação (imagem deletado)
+        notifications.publish(new NotificationDto(
+                "ALBUM_IMAGE_DELETED",
+                "ALBUM",
+                albumId,
+                tituloAlbum,
+                "Imagem removida do álbum" + (tituloAlbum != null ? ": " + tituloAlbum : ""),
+                Instant.now(),
+                Map.of(
+                        "imageId", imagemId,
+                        "objectKey", chave
+                )
+        ));
     }
 
     @Transactional(readOnly = true)
@@ -213,7 +275,7 @@ public class ImagemAlbumService {
         return imagens.stream().map(img -> {
             String url;
             try {
-                url = storage.presignedGetUrl(img.chaveObjeto(), EXPIRACAO_URL_SEGUNDOS );
+                url = storage.presignedGetUrl(img.chaveObjeto(), EXPIRACAO_URL_SEGUNDOS);
             } catch (Exception e) {
                 throw new RuntimeException("Falha ao gerar URL assinada para imagem " + img.id(), e);
             }
@@ -274,12 +336,52 @@ public class ImagemAlbumService {
                 ));
             }
 
+            // Notificação (imagens upload)
+            notifications.publish(new NotificationDto(
+                    "ALBUM_IMAGES_UPLOADED",
+                    "ALBUM",
+                    albumId,
+                    album.getTitulo(),
+                    "Imagens enviadas para o álbum: " + album.getTitulo(),
+                    Instant.now(),
+                    Map.of(
+                            "qtd", result.size(),
+                            "temCapa", result.stream().anyMatch(i -> Boolean.TRUE.equals(i.ehCapa()))
+                    )
+            ));
+
             return result;
         } catch (Exception e) {
             for (String key : objectKeysEnviados) {
                 try { storage.delete(key); } catch (Exception ignored) {}
             }
+            // Notificação (imagens falhou)
+            notifications.publish(new NotificationDto(
+                    "ALBUM_UPLOAD_FAILED",
+                    "ALBUM",
+                    albumId,
+                    album.getTitulo(),
+                    "Falha ao enviar imagens do álbum: " + album.getTitulo(),
+                    Instant.now(),
+                    Map.of("error", e.getMessage() == null ? "erro" : e.getMessage())
+            ));
+
             throw new RuntimeException("Falha ao enviar imagens para o MinIO", e);
+        }
+    }
+
+    private void validarArquivo(MultipartFile arquivo) {
+        if (arquivo == null || arquivo.isEmpty()) {
+            throw new ArquivoInvalidoException("Arquivo é obrigatório");
+        }
+        if (arquivo.getSize() > MAX_BYTES) {
+            throw new ArquivoInvalidoException("Arquivo excede o limite de 10MB");
+        }
+        String ct = arquivo.getContentType();
+        if (ct == null || !(ct.equalsIgnoreCase("image/jpeg")
+                || ct.equalsIgnoreCase("image/png")
+                || ct.equalsIgnoreCase("image/webp"))) {
+            throw new ArquivoInvalidoException("Tipo de arquivo inválido. Use JPEG, PNG ou WEBP");
         }
     }
 

@@ -1,6 +1,8 @@
 package br.com.seplag.sistema.erp.service;
 
 import br.com.seplag.sistema.erp.model.dto.ArtistaListDto;
+import br.com.seplag.sistema.erp.model.dto.NotificationDto;
+import br.com.seplag.sistema.websocket.NotificationPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.domain.Page;
@@ -11,15 +13,18 @@ import br.com.seplag.sistema.erp.model.dto.ArtistaDto;
 import br.com.seplag.sistema.erp.repository.ArtistaRepository;
 import br.com.seplag.sistema.exception.RecursoNaoEncontradoException;
 
-import java.util.List;
+import java.time.Instant;
+import java.util.Map;
 
 @Service
 public class ArtistaService {
 
     private final ArtistaRepository artistaRepository;
+    private final NotificationPublisher notifications;
 
-    public ArtistaService(ArtistaRepository artistaRepository) {
+    public ArtistaService(ArtistaRepository artistaRepository, NotificationPublisher notifications) {
         this.artistaRepository = artistaRepository;
+        this.notifications = notifications;
     }
 
     @Transactional
@@ -29,6 +34,17 @@ public class ArtistaService {
         a.setGenero(dto.genero());
 
         Artista salvo = artistaRepository.save(a);
+        // Notificação (artista Criado)
+        notifications.publish(new NotificationDto(
+                "ARTIST_CREATED",
+                "ARTIST",
+                salvo.getId(),
+                salvo.getNome(),
+                "Novo artista cadastrado: " + salvo.getNome(),
+                Instant.now(),
+                Map.of("genero", salvo.getGenero())
+        ));
+
         return new ArtistaDto(salvo.getId(), salvo.getNome(), salvo.getGenero());
     }
 
@@ -64,6 +80,17 @@ public class ArtistaService {
         a.setGenero(dto.genero());
 
         Artista salvo = artistaRepository.save(a);
+        // Notificação (artista Editado)
+        notifications.publish(new NotificationDto(
+                "ARTIST_UPDATED",
+                "ARTIST",
+                salvo.getId(),
+                salvo.getNome(),
+                "Artista atualizado: " + salvo.getNome(),
+                Instant.now(),
+                Map.of("genero", salvo.getGenero())
+        ));
+
         return new ArtistaDto(salvo.getId(), salvo.getNome(), salvo.getGenero());
     }
 
@@ -72,6 +99,17 @@ public class ArtistaService {
         if (!artistaRepository.existsById(id)) {
             throw new RecursoNaoEncontradoException("Artista não encontrado: " + id);
         }
+
         artistaRepository.deleteById(id);
+        // Notificação (artista deletado)
+        notifications.publish(new NotificationDto(
+                "ARTIST_DELETED",
+                "ARTIST",
+                id,
+                null,
+                "Artista removido: " + id,
+                Instant.now(),
+                Map.of()
+        ));
     }
 }
