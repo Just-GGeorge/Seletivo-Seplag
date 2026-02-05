@@ -1,17 +1,18 @@
 package br.com.seplag.sistema.erp.service;
 
-
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-
 import br.com.seplag.sistema.erp.model.Album;
 import br.com.seplag.sistema.erp.model.Artista;
+import br.com.seplag.sistema.erp.model.dto.AlbumComImagensDto;
 import br.com.seplag.sistema.erp.model.dto.AlbumDto;
+import br.com.seplag.sistema.erp.model.dto.ImagemAlbumDto;
 import br.com.seplag.sistema.erp.repository.AlbumRepository;
 import br.com.seplag.sistema.erp.repository.ArtistaRepository;
 import br.com.seplag.sistema.exception.RecursoNaoEncontradoException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -20,10 +21,16 @@ public class AlbumService {
 
     private final AlbumRepository albumRepository;
     private final ArtistaRepository artistaRepository;
+    private final ImagemAlbumService imagemAlbumService;
 
-    public AlbumService(AlbumRepository albumRepository, ArtistaRepository artistaRepository) {
+    public AlbumService(
+            AlbumRepository albumRepository,
+            ArtistaRepository artistaRepository,
+            ImagemAlbumService imagemAlbumService
+    ) {
         this.albumRepository = albumRepository;
         this.artistaRepository = artistaRepository;
+        this.imagemAlbumService = imagemAlbumService;
     }
 
     @Transactional
@@ -32,18 +39,39 @@ public class AlbumService {
         album.setTitulo(dto.titulo());
         album.setDataLancamento(dto.dataLancamento());
 
-        List<Artista> artistas = carregarArtistasObrigatorio(dto.artistasIds());
+        List<Artista> artistas = carregarArtistas(dto.artistasIds());
         album.setArtistas(artistas);
 
         Album salvo = albumRepository.save(album);
         return toDto(salvo);
     }
 
+    @Transactional
+    public AlbumComImagensDto criarComUpload(AlbumDto dto, List<MultipartFile> arquivos, Integer indiceCapa) {
+        AlbumDto albumCriado = criar(dto);
+
+        try {
+            List<ImagemAlbumDto> imagens = imagemAlbumService.uploadMultiplasParaAlbumOpcional(
+                    albumCriado.id(),
+                    arquivos,
+                    indiceCapa
+            );
+            return new AlbumComImagensDto(albumCriado, imagens, true, null);
+        } catch (RuntimeException ex) {
+            String msg = ex.getCause() != null ? ex.getCause().getMessage() : ex.getMessage();
+            return new AlbumComImagensDto(albumCriado, List.of(), false, msg);
+        }
+    }
+
     @Transactional(readOnly = true)
-    public Page<AlbumDto> listar(Long artistaId, String titulo, Pageable pageable) {
-        return albumRepository.buscarComFiltro(artistaId, titulo, pageable)
+    public Page<AlbumDto> listar(List<Long> artistaIds, String titulo, Pageable pageable) {
+        if (artistaIds != null && artistaIds.isEmpty()) {
+            artistaIds = null;
+        }
+        return albumRepository.buscarComFiltro(artistaIds, titulo, pageable)
                 .map(this::toDto);
     }
+
 
     @Transactional(readOnly = true)
     public AlbumDto buscarPorId(Long id) {
@@ -60,7 +88,7 @@ public class AlbumService {
         album.setTitulo(dto.titulo());
         album.setDataLancamento(dto.dataLancamento());
 
-        List<Artista> artistas = carregarArtistasObrigatorio(dto.artistasIds());
+        List<Artista> artistas = carregarArtistas(dto.artistasIds());
         album.setArtistas(artistas);
 
         Album salvo = albumRepository.save(album);
@@ -88,9 +116,9 @@ public class AlbumService {
         );
     }
 
-    private List<Artista> carregarArtistasObrigatorio(List<Long> artistasIds) {
+    private List<Artista> carregarArtistas(List<Long> artistasIds) {
         if (artistasIds == null || artistasIds.isEmpty()) {
-            throw new IllegalArgumentException("artistasIds é obrigatório e não pode ser vazio");
+            return List.of();
         }
 
         List<Artista> artistas = artistaRepository.findAllById(artistasIds);

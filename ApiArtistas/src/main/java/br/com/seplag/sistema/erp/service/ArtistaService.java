@@ -1,5 +1,6 @@
 package br.com.seplag.sistema.erp.service;
 
+import br.com.seplag.sistema.erp.model.dto.ArtistaListDto;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.domain.Page;
@@ -32,9 +33,19 @@ public class ArtistaService {
     }
 
     @Transactional(readOnly = true)
-    public Page<ArtistaDto> listar(String nome, String genero, Pageable pageable) {
-        return artistaRepository.buscarComFiltro(nome, genero, pageable)
-                .map(a -> new ArtistaDto(a.getId(), a.getNome(), a.getGenero()));
+    public Page<ArtistaListDto> listar(String pesquisa, Pageable pageable) {
+        String sortField = "id";
+        String sortDir = "asc";
+
+        if (pageable.getSort().isSorted()) {
+            var order = pageable.getSort().iterator().next();
+            sortField = order.getProperty();
+            sortDir = order.isAscending() ? "asc" : "desc";
+        }
+
+        Pageable semSort = Pageable.ofSize(pageable.getPageSize()).withPage(pageable.getPageNumber());
+
+        return artistaRepository.buscarComFiltroComQtdAlbunsOrdenado(pesquisa, sortField, sortDir, semSort);
     }
 
     @Transactional(readOnly = true)

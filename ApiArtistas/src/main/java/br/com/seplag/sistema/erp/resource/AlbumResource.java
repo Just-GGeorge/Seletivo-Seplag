@@ -1,6 +1,8 @@
 package br.com.seplag.sistema.erp.resource;
 
+import br.com.seplag.sistema.erp.model.dto.AlbumComImagensDto;
 import jakarta.validation.Valid;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.data.domain.Page;
@@ -10,8 +12,10 @@ import org.springframework.data.domain.Sort;
 
 import br.com.seplag.sistema.erp.model.dto.AlbumDto;
 import br.com.seplag.sistema.erp.service.AlbumService;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.net.URI;
+import java.util.List;
 
 
 @RestController
@@ -32,11 +36,11 @@ public class AlbumResource {
 
     @GetMapping
     public ResponseEntity<Page<AlbumDto>> listar(
-            @RequestParam(required = false) Long artistaId,
+            @RequestParam(required = false) List<Long> artistaIds,
             @RequestParam(defaultValue = "") String titulo,
             @PageableDefault(size = 10, sort = "id", direction = Sort.Direction.ASC) Pageable pageable
     ) {
-        return ResponseEntity.ok(albumService.listar(artistaId, titulo, pageable));
+        return ResponseEntity.ok(albumService.listar(artistaIds, titulo, pageable));
     }
 
     @GetMapping("/{id}")
@@ -53,5 +57,15 @@ public class AlbumResource {
     public ResponseEntity<Void> deletar(@PathVariable Long id) {
         albumService.deletar(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping(value = "/with-upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<AlbumComImagensDto> criarComUpload(
+            @RequestPart("dto") @Valid AlbumDto dto,
+            @RequestPart(value = "arquivos", required = false) List<MultipartFile> arquivos,
+            @RequestParam(value = "indiceCapa", required = false) Integer indiceCapa
+    ) {
+        AlbumComImagensDto criado = albumService.criarComUpload(dto, arquivos, indiceCapa);
+        return ResponseEntity.created(URI.create("/albuns/" + criado.album().id())).body(criado);
     }
 }

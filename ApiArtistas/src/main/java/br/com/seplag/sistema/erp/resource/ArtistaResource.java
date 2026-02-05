@@ -1,5 +1,6 @@
 package br.com.seplag.sistema.erp.resource;
 
+import br.com.seplag.sistema.erp.model.dto.ArtistaListDto;
 import jakarta.validation.Valid;
 
 import org.springframework.data.web.PageableDefault;
@@ -13,7 +14,6 @@ import br.com.seplag.sistema.erp.model.dto.ArtistaDto;
 import br.com.seplag.sistema.erp.service.ArtistaService;
 
 import java.net.URI;
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/artistas")
@@ -32,12 +32,11 @@ public class ArtistaResource {
     }
 
     @GetMapping
-    public ResponseEntity<Page<ArtistaDto>> listar(
-    		@RequestParam(defaultValue = "") String nome,
-            @RequestParam(defaultValue = "") String genero,
+    public ResponseEntity<Page<ArtistaListDto>> listar(
+            @RequestParam(defaultValue = "") String pesquisa,
             @PageableDefault(size = 10, sort = "id", direction = Sort.Direction.ASC) Pageable pageable
     ) {
-        return ResponseEntity.ok(artistaService.listar(nome, genero, pageable));
+        return ResponseEntity.ok(artistaService.listar(pesquisa, pageable));
     }
 
     @GetMapping("/{id}")

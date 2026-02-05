@@ -31,7 +31,6 @@ services:
     volumes:
       - minio_data:/data
     healthcheck:
-      # MinIO expõe esse endpoint nativo
       test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
       interval: 5s
       timeout: 3s
@@ -67,13 +66,24 @@ services:
       minio-init:
         condition: service_completed_successfully
     restart: unless-stopped
-
     healthcheck:
       test: ["CMD-SHELL", "curl -fsS http://localhost:8080/actuator/health/readiness | grep -q '\"status\":\"UP\"'"]
       interval: 10s
       timeout: 5s
       retries: 10
       start_period: 20s
+
+  front:
+    build:
+      context: ./FrontArtistas
+      dockerfile: Dockerfile
+    container_name: meu_front
+    ports:
+      - "80:80"
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
 
 volumes:
   postgres_data:
